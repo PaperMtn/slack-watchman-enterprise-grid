@@ -1,0 +1,27 @@
+---
+filename: slack_webhooks.yaml
+enabled: true
+meta:
+  name: Slack Webhooks
+  author: PaperMtn
+  date: '2021-09-24'
+  description: Detects exposed Slack webhooks
+  severity: '70'
+tombstone: false
+scope:
+- messages
+- drafts
+file_types:
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+  - https://hooks.slack.com/services/T01010101/Babababab/aabab1212abab1212abababa
+  fail_cases:
+  - https://hooks.slack.com/
+  - http://hooks.slack.com/
+search_strings:
+- https://hooks.slack.com/
+pattern: 'https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}'

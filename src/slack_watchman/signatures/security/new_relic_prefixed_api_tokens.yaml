@@ -1,0 +1,30 @@
+---
+filename: new_relic_prefixed_api_tokens.yaml
+enabled: true
+meta:
+  name: New Relic API Tokens (Prefixed)
+  author: PaperMtn
+  date: '2021-10-12'
+  description: Detects exposed New Relic API Tokens (Prefixed)
+  severity: '90'
+tombstone: false
+scope:
+- messages
+- drafts
+file_types:
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+    - 'APIKEY: NRRA-6baa13a5c9e652b3bdfeb7c7cde9056c381a190de9'
+  fail_cases:
+    - 'NRRA-0TBbaAQApxx6ykLgRElSk8UuMVWn02qUZgSu4C58Jc'
+search_strings:
+  - nrra
+pattern: '(?i)NRRA-[a-f0-9]{42}'
+
+
+
+

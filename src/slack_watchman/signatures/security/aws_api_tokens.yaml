@@ -1,0 +1,27 @@
+---
+filename: aws_api_tokens.yaml
+enabled: true
+meta:
+  name: AWS API Tokens
+  author: PaperMtn
+  date: '2021-09-24'
+  description: Detects exposed AWS API secret tokens
+  severity: '90'
+tombstone: false
+scope:
+- messages
+- drafts
+file_types:
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+  - AbCdEfGh1234567890AbAbAb+aAb1111111111+=
+  fail_cases:
+  - AbCdEfGh1234567890AbAbAb+aAb1111111111+=AAA
+search_strings:
+- ASIA
+- AKIA
+pattern: '(?<![A-Za-z0-9\\/+=])[A-Za-z0-9\\/+=]{40}(?![A-Za-z0-9\\/+=])'

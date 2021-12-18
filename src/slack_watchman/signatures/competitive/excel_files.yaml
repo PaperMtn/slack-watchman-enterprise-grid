@@ -1,0 +1,31 @@
+---
+filename: excel_files.yaml
+enabled: true
+meta:
+  name: Excel Files
+  author: PaperMtn
+  date: '2021-09-24'
+  description: Detects exposed Microsoft Excel documents
+  severity: '30'
+tombstone: false
+scope:
+- files
+file_types:
+- xls
+- xlsx
+- xlsm
+- xlsb
+- xltx
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+  - blank
+  fail_cases:
+  - blank
+search_strings:
+- '.xls'
+- '.xltx'
+pattern: ''

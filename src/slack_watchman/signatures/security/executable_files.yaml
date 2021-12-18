@@ -1,0 +1,29 @@
+---
+filename: executable_files.yaml
+enabled: true
+meta:
+  name: Executable Files
+  author: PaperMtn
+  date: '2021-09-24'
+  description: Detects exposed executable files
+  severity: '30'
+tombstone: false
+scope:
+- files
+- drafts
+file_types:
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+  - blank
+  fail_cases:
+  - blank
+search_strings:
+- '.exe'
+- '.dmg'
+- '.iso'
+- '.pkg'
+pattern: ''

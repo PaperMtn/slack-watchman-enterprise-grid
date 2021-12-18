@@ -1,0 +1,26 @@
+---
+filename: cusip_numbers.yaml
+enabled: true
+meta:
+  name: CUSIP Numbers
+  author: PaperMtn
+  date: '2021-09-24'
+  description: Detects potentially exposed CUSIP numbers in plaintext
+  severity: '70'
+scope:
+- messages
+- drafts
+file_types:
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+  - 'Apple Inc 037833100'
+  - 'Alphabet Inc 02079K107'
+  fail_cases:
+  - 'Walmart Stores, Inc. 93a1142103'
+search_strings:
+- cusip
+pattern: '[0-9]{3}[a-zA-Z0-9]{6}'

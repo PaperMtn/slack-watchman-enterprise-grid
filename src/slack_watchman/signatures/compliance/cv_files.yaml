@@ -1,0 +1,39 @@
+---
+filename: cv_files.yaml
+enabled: true
+meta:
+  name: CV Files
+  author: PaperMtn
+  date: '2021-09-24'
+  description: Detects exposed CV files
+  severity: '30'
+scope:
+- files
+- drafts
+file_types:
+- doc
+- docx
+- dotx
+- docm
+- pdf
+- gdoc
+- gpres
+- ppt
+- pptx
+- jpeg
+- png
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+  - blank
+  fail_cases:
+  - blank
+search_strings:
+- 'resume'
+- 'cv'
+- 'curriculum vitae'
+- 'washup'
+pattern: ''

@@ -1,0 +1,36 @@
+---
+filename: new_relic_api_tokens.yaml
+enabled: true
+meta:
+  name: New Relic API Tokens
+  author: PaperMtn
+  date: '2021-10-12'
+  description: Detects exposed New Relic API tokens
+  severity: '90'
+tombstone: false
+scope:
+- messages
+- drafts
+file_types:
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+    - "'X-Api-Key': '8ETcQQkZ0nsAeRX1Hqpt9MS8xnxdYDlmMAu1DgLmnq8U2r2'"
+  fail_cases:
+    - 'ENV NEWRELIC_KEY=$NEWRELIC_KEY'
+search_strings:
+  - relic
+#  - api.newrelic.com
+#  - new relic
+#  - new_relic
+#  - new-relic
+#  - newrelic
+#  - NewRelic-Partner-Id
+#  - NewRelic-Account-Id
+pattern: '(?i)(''|"){0,2}((token|key)|X-Api-Key)(''|"){0,2}\s*(=|:|\s*)(\s*)(''|"){0,2}([0-9a-zA-Z]{40,47})(''|"){0,2}'
+
+
+

@@ -1,0 +1,26 @@
+---
+filename: access_tokens.yaml
+enabled: true
+meta:
+  name: Access Tokens
+  author: PaperMtn
+  date: '2021-09-24'
+  description: Detects exposed access_tokens
+  severity: '70'
+tombstone: false
+scope:
+- messages
+- drafts
+file_types:
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+  - 'ACCESS_TOKEN: 123456789abcdefg123456789123456789'
+  fail_cases:
+  - 'ACCESS_TOKEN: $ACCESS_TOKEN'
+search_strings:
+- 'access_token'
+pattern: '(?i)(''|"){0,2}access_token(''|"){0,2}:(\s*)(''|"){0,2}([0-9a-zA-Z!@#$&()\/\-`_.+,"]{30,})(''|"){0,2}'

@@ -1,0 +1,33 @@
+---
+filename: x_auth_key.yaml
+enabled: true
+meta:
+  name: X-Auth keys
+  author: PaperMtn
+  date: '2021-10-12'
+  description: Detects exposed X-Auth tokens
+  severity: '70'
+tombstone: false
+scope:
+- messages
+- drafts
+file_types:
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+    - 'H "X-Auth-Key:1234567893feefc5f0q5000bfo0c38d90bbeb"'
+  fail_cases:
+    - "key = 1234567893feefc5f0q5000bfo0c38d90bbeb"
+search_strings:
+  - x-auth-key
+pattern: '(?i)(''|"){0,2}(X-Auth-Key)(''|"){0,2}\s*(=|:|\s*)(\s*)(''|"){0,2}([0-9A-Za-z-_]{10,40})(''|"){0,2}'
+
+
+
+
+
+
+

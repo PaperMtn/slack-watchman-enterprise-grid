@@ -1,0 +1,3 @@
+include *.txt
+recursive-include src *.yaml *.yml
+recursive-exclude src test*.yaml test*.yml

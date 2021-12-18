@@ -1,0 +1,26 @@
+---
+filename: shodan_api_tokens.yaml
+enabled: true
+meta:
+  name: Shodan API Tokens
+  author: PaperMtn
+  date: '2020-10-26'
+  description: Detects exposed Shodan API tokens
+  severity: '70'
+tombstone: false
+scope:
+- messages
+- drafts
+file_types:
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+  - aabbccddeeff111111111111aabbccdd
+  fail_cases:
+  - ddeeff111111111111aabbccddeeff
+search_strings:
+- shodan.io
+pattern: '[0-9A-Za-z]{32}'

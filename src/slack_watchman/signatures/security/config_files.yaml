@@ -1,0 +1,27 @@
+---
+filename: config_files.yaml
+enabled: true
+meta:
+  name: Config Files
+  author: PaperMtn
+  date: '2021-09-24'
+  description: Detects exposed configuration files
+  severity: '30'
+tombstone: false
+scope:
+- files
+- drafts
+file_types:
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+  - blank
+  fail_cases:
+  - blank
+search_strings:
+- '.conf'
+- '.ini'
+pattern: ''

@@ -1,0 +1,27 @@
+---
+filename: drivers_licence_uk.yaml
+enabled: true
+meta:
+  name: Drivers Licence Numbers (UK)
+  author: PaperMtn
+  date: '2021-09-24'
+  description: Detects potentially exposed drivers licence numbers in plaintext
+  severity: '70'
+tombstone: false
+scope:
+- messages
+- drafts
+file_types:
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+  - 'Drivers licence: FARME100165AB5EW'
+  - 'MAR99740614BC2TL'
+  fail_cases:
+  - '9999974061499299'
+search_strings:
+- drivers licence
+pattern: '[A-Za-z9]{5}\d{6}[A-Za-z9]{2}\d[A-Za-z]{2}'

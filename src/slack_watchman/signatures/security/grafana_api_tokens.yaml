@@ -1,0 +1,29 @@
+---
+filename: grafana_api_tokens.yaml
+enabled: true
+meta:
+  name: Grafana API Tokens
+  author: PaperMtn
+  date: '2021-10-12'
+  description: Detects exposed Grafana API tokens
+  severity: '90'
+tombstone: false
+scope:
+- messages
+- drafts
+file_types:
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+    - 'eyJrIjoiO9gpnHNvvt1vSjerEWen9yZtuZqZh3oLwB342dQbdk'
+  fail_cases:
+    - 'eyfJrIjoiO9gpnHNvvt1vSjerEWen9yZtuZqZh3oLwB342dQbdk'
+search_strings:
+  - eyjrijoi
+  - grafana
+pattern: '(?i)eyjrijoi([0-9a-zA-Z]{42})'
+
+

@@ -1,0 +1,28 @@
+---
+filename: itin_numbers.yaml
+enabled: true
+meta:
+  name: ITIN Numbers
+  author: PaperMtn
+  date: '2021-11-01'
+  description: Detects potentially exposed ITIN numbers in plaintext
+  severity: '70'
+tombstone: false
+scope:
+- messages
+- drafts
+file_types:
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+  - '999997406'
+  - '900-65-0000'
+  fail_cases:
+  - '100-65-0000'
+search_strings:
+- tin
+- Individual Taxpayer Identification Number
+pattern: '9\d{2}-?((5[0-9]|6[0-5])|(8[3-8])|(9[0-2])|(9[4-9]))-?\d{4}\b'

@@ -1,0 +1,28 @@
+---
+filename: powerpoint_files.yaml
+enabled: true
+meta:
+  name: PowerPoint Files
+  author: PaperMtn
+  date: '2021-09-24'
+  description: Detects exposed Microsoft PowerPoint documents
+  severity: '30'
+tombstone: false
+scope:
+- files
+file_types:
+- ppt
+- pptx
+- pptm
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+  - blank
+  fail_cases:
+  - blank
+search_strings:
+- '.ppt'
+pattern: ''

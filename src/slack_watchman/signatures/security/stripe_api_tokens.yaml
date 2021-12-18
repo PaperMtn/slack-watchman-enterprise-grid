@@ -1,0 +1,30 @@
+---
+filename: stripe_api_tokens.yaml
+enabled: true
+meta:
+  name: Stripe API Tokens
+  author: PaperMtn
+  date: '2020-10-21'
+  description: Detects exposed Stripe API tokens
+  severity: '70'
+tombstone: false
+scope:
+- messages
+- drafts
+file_types:
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+  - sk_live_aaaaaarmZltoKlnSZMaaaaaa
+  - rk_live_aaaaaarmZltoKlnSZMaaaaaa
+  - sk_test_aaaaaarmZltoKlnSZMaaaaaa
+  fail_cases:
+  - uk_live_aaaaaarmZltoKlnSZMaaaaaa
+search_strings:
+- api.stripe.com
+- STRIPE_API_KEY
+- STRIPE_SECRET_KEY
+pattern: '[s|r]k_(live|test)_[0-9a-zA-Z]{24}'

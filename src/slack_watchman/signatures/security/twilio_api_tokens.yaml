@@ -1,0 +1,27 @@
+---
+filename: twilio_api_tokens.yaml
+enabled: true
+meta:
+  name: Twilio API Tokens
+  author: PaperMtn
+  date: '2020-10-21'
+  description: Detects exposed Twilio API tokens
+  severity: '70'
+tombstone: false
+scope:
+- messages
+- drafts
+file_types:
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+  - SKaaaaaaaa413272ec0a65f2fd1b14ab10
+  fail_cases:
+  - SK_TEST_6f9cfc9d413272ec0a65f2fd1b14ab10
+search_strings:
+- api.twilio.com
+- TWILIO_API
+pattern: 'SK[0-9a-fA-F]{32}'

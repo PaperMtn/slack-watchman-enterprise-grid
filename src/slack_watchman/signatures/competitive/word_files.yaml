@@ -1,0 +1,30 @@
+---
+filename: word_files.yaml
+enabled: true
+meta:
+  name: Word Files
+  author: PaperMtn
+  date: '2021-09-24'
+  description: Detects exposed Microsoft Word documents
+  severity: '30'
+tombstone: false
+scope:
+- files
+file_types:
+- doc
+- docx
+- dotx
+- docm
+locations:
+  - public
+  - private
+  - connect
+test_cases:
+  match_cases:
+  - blank
+  fail_cases:
+  - blank
+search_strings:
+- '.doc'
+- '.dotx'
+pattern: ''
