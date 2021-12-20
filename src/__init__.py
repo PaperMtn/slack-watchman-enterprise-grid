@@ -10,7 +10,7 @@ from src.slack_watchman import logger as logger
 from src.slack_watchman import slack_wrapper
 from src.slack_watchman import signature
 
-RULES_PATH = (Path(__file__).parent / 'slack_watchman/signatures').resolve()
+SIGNATURES_PATH = (Path(__file__).parents[1] / 'signatures').resolve()
 OUTPUT_LOGGER: logger.StdoutLogger
 
 
@@ -23,13 +23,13 @@ def load_signatures() -> list[signature.Signature]:
 
     loaded_signatures = []
     try:
-        for root, dirs, files in os.walk(RULES_PATH):
-            for rule_file in files:
-                rule_path = (Path(root) / rule_file).resolve()
-                if rule_path.name.endswith('.yaml'):
-                    loaded_def = signature.load_from_yaml(rule_path)
-                    if loaded_def.enabled:
-                        loaded_signatures.append(loaded_def)
+        for root, dirs, files in os.walk(SIGNATURES_PATH):
+            for sig_file in files:
+                sig_path = (Path(root) / sig_file).resolve()
+                if sig_path.name.endswith('.yaml'):
+                    loaded_sig = signature.load_from_yaml(sig_path)
+                    if loaded_sig.enabled:
+                        loaded_signatures.append(loaded_sig)
         return loaded_signatures
     except Exception as e:
         raise e

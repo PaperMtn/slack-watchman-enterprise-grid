@@ -5,8 +5,7 @@ from pathlib import Path
 
 from src.slack_watchman import signature
 
-SIGNATURES_PATH = (Path(__file__).parents[0] / 'slack_watchman/signatures').resolve()
-
+SIGNATURES_PATH = (Path(__file__).parents[1] / 'signatures').resolve()
 
 def load_signatures() -> list:
     """Load signatures from YAML files
