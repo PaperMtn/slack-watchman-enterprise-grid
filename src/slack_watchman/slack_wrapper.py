@@ -873,6 +873,45 @@ def get_conversations(slack_connection: SlackAPI,
     return results
 
 
+def tombstone_file(slack_connection: SlackAPI,
+                   file: dict,
+                   content: str = None):
+    """ Tombstone the given file
+
+    Args:
+        slack_connection: Slack API object
+        file: File to tombstone
+        content: Tombstone text to display
+    """
+
+    try:
+        slack_connection.tombstone_file(file.get('id'),
+                                        'File Removed',
+                                        content)
+    except Exception as e:
+        raise e
+
+
+def tombstone_message(slack_connection: SlackAPI,
+                      message: dict,
+                      content: str = None):
+    """ Tombstone the given message
+
+    Args:
+        slack_connection: Slack API object
+        message: Message to tombstone
+        content: Tombstone text to display
+    """
+
+    try:
+        slack_connection.tombstone_message(message.get('timestamp'),
+                                           message.get('conversation').get('id'),
+                                           message.get('team'),
+                                           content)
+    except Exception as e:
+        raise e
+
+
 def search_message_matches(sig: signature.Signature,
                            slack_connection: SlackAPI,
                            users_list: list[user.User],

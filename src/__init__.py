@@ -12,6 +12,7 @@ from src.slack_watchman import signature
 
 SIGNATURES_PATH = (Path(__file__).parents[1] / 'signatures').resolve()
 OUTPUT_LOGGER: logger.StdoutLogger
+TOMBSTONE_CONTENT = None
 
 
 def load_signatures() -> list[signature.Signature]:
@@ -42,7 +43,8 @@ def search(sig: signature,
            workspace_list: list,
            files_list: list,
            scope: str,
-           cores: int):
+           cores: int,
+           tombstone: bool):
     """ Uses the signature to call the relevant search functions to find data in messages
     files and drafts. Results are output to stdout logging.
 
@@ -55,6 +57,7 @@ def search(sig: signature,
         files_list: List of File objects to search through
         scope: Scope of any results found for logging: e.g Draft
         cores: Number of CPU cores to use
+        tombstone: Whether to tombstone the file or not
     """
 
     if scope == 'messages':
@@ -76,9 +79,17 @@ def search(sig: signature,
                     severity=sig.meta.severity,
                     detect_type=sig.meta.name
                 )
+            if tombstone:
+                OUTPUT_LOGGER.log_info(f'Tombstoning messages containing {sig.meta.name}')
+                for message in messages:
+                    slack_wrapper.tombstone_message(slack_connection,
+                                                    message.get('message'),
+                                                    content=TOMBSTONE_CONTENT)
+                OUTPUT_LOGGER.log_info(f'{len(messages)} messages tombstoned')
+
     if scope == 'files':
         OUTPUT_LOGGER.log_info(f'Searching for {sig.meta.name}')
-        files = slack_wrapper.search_file_matches(sig, user_list, files_list, cores, OUTPUT_LOGGER)
+        files = slack_wrapper.search_file_matches(sig, user_list, files_list, cores, tombstone, OUTPUT_LOGGER)
         if files:
             for file in files:
                 OUTPUT_LOGGER.log_notification(
@@ -87,6 +98,13 @@ def search(sig: signature,
                     severity=sig.meta.severity,
                     detect_type=sig.meta.name
                 )
+            if tombstone:
+                OUTPUT_LOGGER.log_info(f'Tombstoning {sig.meta.name}')
+                for file in files:
+                    slack_wrapper.tombstone_file(slack_connection,
+                                                 file.get('file'),
+                                                 content=TOMBSTONE_CONTENT)
+                OUTPUT_LOGGER.log_info(f'{len(files)} files tombstoned')
 
 
 def core_validation(cores: int) -> int:
@@ -118,8 +136,25 @@ def init_logger() -> logger.StdoutLogger:
     return logger.StdoutLogger()
 
 
+def parse_tombstone_text(filepath: str) -> str or None:
+    """ Use a custom tombstone notification from a txt file
+
+    Args:
+        filepath: Path to txt file containing custom tombstone text
+    Returns:
+        String containing contents of the txt file, or None to use the default
+    """
+
+    try:
+        with open(filepath, encoding='utf8') as f:
+            contents = f.read()
+            return contents
+    except:
+        return None
+
+
 def main():
-    global OUTPUT_LOGGER
+    global OUTPUT_LOGGER, TOMBSTONE_CONTENT
     try:
         OUTPUT_LOGGER = init_logger()
         parser = argparse.ArgumentParser(description=__version__.__summary__)
@@ -135,12 +170,17 @@ def main():
                             version=f'Slack Watchman for Enterprise Grid: {__version__.__version__}')
         parser.add_argument('--users', dest='users', action='store_true', help='Find all users')
         parser.add_argument('--workspaces', dest='workspaces', action='store_true', help='Find all workspaces')
-        parser.add_argument('--tombstone', dest='tombstone', action='store_true', help='Tombstone messages')
+        parser.add_argument('--tombstone', dest='tombstone', action='store_true', help='Tombstone (REMOVE) all '
+                                                                                       'matching messages')
+        parser.add_argument('--tombstone-text-file', dest='tombstone_filepath', type=str,
+                            help='Path to file containing custom tombstone notification text (Optional)',
+                            required=False)
 
         args = parser.parse_args()
         hours = args.hours
         minutes = args.minutes
         tombstone = args.tombstone
+        tombstone_filepath = args.tombstone_filepath
         cores = args.cores
         users = args.users
         workspaces = args.workspaces
@@ -181,6 +221,13 @@ def main():
         OUTPUT_LOGGER.log_info('Importing signatures...')
         signature_list = load_signatures()
         OUTPUT_LOGGER.log_info(f'{len(signature_list)} signatures loaded')
+
+        if tombstone:
+            OUTPUT_LOGGER.log_info('Tombstone option selected. All files and messages that match signatures will be '
+                                   'removed and replaced with a notification')
+            if tombstone_filepath:
+                TOMBSTONE_CONTENT = parse_tombstone_text(tombstone_filepath)
+
         OUTPUT_LOGGER.log_info(f'Searching previous {hours} hour(s), {minutes} minutes')
         OUTPUT_LOGGER.log_info('Enumerating Enterprise information')
         OUTPUT_LOGGER.log_notification(slack_wrapper.get_enterprise(slack_con), detect_type='Enterprise')
@@ -219,7 +266,8 @@ def main():
                     workspace_list,
                     file_list,
                     scope,
-                    cores
+                    cores,
+                    tombstone
                 )
 
         OUTPUT_LOGGER.log_info('Enumerating draft messages')
