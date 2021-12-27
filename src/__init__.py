@@ -15,16 +15,26 @@ OUTPUT_LOGGER: logger.StdoutLogger
 TOMBSTONE_CONTENT = None
 
 
-def load_signatures() -> list[signature.Signature]:
-    """ Load signatures from YAML files
+def load_signatures(sandbox: bool) -> list[signature.Signature]:
+    """
+    Load signatures from YAML files
 
+    Args:
+        sandbox: Whether to load sandbox signatures
     Returns:
         List containing loaded definitions as signatures objects
+
     """
 
     loaded_signatures = []
+    if sandbox:
+        signature_path = (SIGNATURES_PATH / 'sandbox').resolve()
+        OUTPUT_LOGGER.log_info('Importing sandbox signatures')
+    else:
+        signature_path = SIGNATURES_PATH
+
     try:
-        for root, dirs, files in os.walk(SIGNATURES_PATH):
+        for root, dirs, files in os.walk(signature_path):
             for sig_file in files:
                 sig_path = (Path(root) / sig_file).resolve()
                 if sig_path.name.endswith('.yaml'):
@@ -172,6 +182,8 @@ def main():
                             version=f'Slack Watchman for Enterprise Grid: {__version__.__version__}')
         parser.add_argument('--users', dest='users', action='store_true', help='Find all users')
         parser.add_argument('--workspaces', dest='workspaces', action='store_true', help='Find all workspaces')
+        parser.add_argument('--sandbox', dest='sandbox', action='store_true', help='Search using only sandbox '
+                                                                                   'signatures')
         parser.add_argument('--tombstone', dest='tombstone', action='store_true', help='Tombstone (REMOVE) all '
                                                                                        'matching messages')
         parser.add_argument('--tombstone-text-file', dest='tombstone_filepath', type=str,
@@ -186,6 +198,7 @@ def main():
         cores = args.cores
         users = args.users
         workspaces = args.workspaces
+        sandbox = args.sandbox
 
         span = 0
 
@@ -221,7 +234,7 @@ def main():
         OUTPUT_LOGGER.log_info(f'Created by: {__version__.__author__} - {__version__.__email__}')
         OUTPUT_LOGGER.log_info(f'{cores} cores in use')
         OUTPUT_LOGGER.log_info('Importing signatures...')
-        signature_list = load_signatures()
+        signature_list = load_signatures(sandbox)
         OUTPUT_LOGGER.log_info(f'{len(signature_list)} signatures loaded')
 
         if tombstone:
