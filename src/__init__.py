@@ -82,14 +82,18 @@ def search(sig: signature,
             if tombstone:
                 OUTPUT_LOGGER.log_info(f'Tombstoning messages containing {sig.meta.name}')
                 for message in messages:
-                    slack_wrapper.tombstone_message(slack_connection,
-                                                    message.get('message'),
-                                                    content=TOMBSTONE_CONTENT)
+                    slack_wrapper.tombstone_message(slack_connection, message.get('message'), content=TOMBSTONE_CONTENT)
                 OUTPUT_LOGGER.log_info(f'{len(messages)} messages tombstoned')
 
     if scope == 'files':
         OUTPUT_LOGGER.log_info(f'Searching for {sig.meta.name}')
-        files = slack_wrapper.search_file_matches(sig, user_list, files_list, cores, tombstone, OUTPUT_LOGGER)
+        files = slack_wrapper.search_file_matches(
+            sig,
+            user_list,
+            files_list,
+            cores,
+            OUTPUT_LOGGER
+        )
         if files:
             for file in files:
                 OUTPUT_LOGGER.log_notification(
@@ -101,9 +105,7 @@ def search(sig: signature,
             if tombstone:
                 OUTPUT_LOGGER.log_info(f'Tombstoning {sig.meta.name}')
                 for file in files:
-                    slack_wrapper.tombstone_file(slack_connection,
-                                                 file.get('file'),
-                                                 content=TOMBSTONE_CONTENT)
+                    slack_wrapper.tombstone_file(slack_connection, file.get('file'), content=TOMBSTONE_CONTENT)
                 OUTPUT_LOGGER.log_info(f'{len(files)} files tombstoned')
 
 
@@ -271,7 +273,12 @@ def main():
                 )
 
         OUTPUT_LOGGER.log_info('Enumerating draft messages')
-        draft_list = slack_wrapper.get_all_drafts(slack_con, workspace_list, cores=cores, timeframe=tf)
+        draft_list = slack_wrapper.get_all_drafts(
+            slack_con,
+            workspace_list,
+            cores=cores,
+            timeframe=tf
+        )
         OUTPUT_LOGGER.log_info(f'{len(draft_list)} drafts discovered')
         for sig in signature_list:
             if 'drafts' in sig.scope:
