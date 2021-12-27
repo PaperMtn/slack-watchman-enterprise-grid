@@ -39,11 +39,12 @@ class SlackAPI(object):
         self.limit = '1000'
         self.session = session = requests.session()
         session.mount(self.base_url, HTTPAdapter(max_retries=Retry(connect=3, backoff_factor=1)))
-        session.headers.update({'Connection': 'keep-alive, close',
-                                'Authorization': f'Bearer {self.token}',
-                                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5)\
-                                    AppleWebKit/537.36 (KHTML, like Gecko) Cafari/537.36'
-                                })
+        session.headers.update({
+            'Connection': 'keep-alive, close',
+            'Authorization': f'Bearer {self.token}',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) '
+                          'Cafari/537.36 '
+        })
         session.params['limit'] = self.limit
 
     def _pagination_loop(self,
@@ -59,16 +60,28 @@ class SlackAPI(object):
 
         if pagination == 'offset' and response.json().get('offset'):
             while response.json().get('offset'):
-                response = self.session.request(method, relative_url, params=params, data=data,
-                                                verify=verify_ssl)
+                response = self.session.request(
+                    method,
+                    relative_url,
+                    params=params,
+                    data=data,
+                    verify=verify_ssl
+                )
+
                 params.update({
                     'offset': response.json().get('offset')
                 })
                 results.append(response.json())
         elif pagination == 'latest' and response.json().get('offset'):
             while response.json().get('offset'):
-                response = self.session.request(method, relative_url, params=params, data=data,
-                                                verify=verify_ssl)
+                response = self.session.request(
+                    method,
+                    relative_url,
+                    params=params,
+                    data=data,
+                    verify=verify_ssl
+                )
+
                 params.update({
                     'latest': response.json().get('offset')
                 })
@@ -78,10 +91,22 @@ class SlackAPI(object):
 
         return results
 
-    def _make_request(self, url, params=None, data=None, method='GET', verify_ssl=True, pagination=None):
+    def _make_request(self,
+                      url,
+                      params=None,
+                      data=None,
+                      method='GET',
+                      verify_ssl=True,
+                      pagination=None):
         try:
             relative_url = '/'.join((self.base_url, url))
-            response = self.session.request(method, relative_url, params=params, data=data, verify=verify_ssl)
+            response = self.session.request(
+                method,
+                relative_url,
+                params=params,
+                data=data,
+                verify=verify_ssl
+            )
 
             if not response.json().get('ok') and response.json().get('error') == 'missing_scope':
                 raise ScopeError()
@@ -94,18 +119,41 @@ class SlackAPI(object):
                     data=data,
                     verify=verify_ssl
                 )
-                return self._pagination_loop(response, pagination, method, relative_url, params, data, verify_ssl)
+                return self._pagination_loop(
+                    response,
+                    pagination,
+                    method,
+                    relative_url,
+                    params,
+                    data,
+                    verify_ssl
+                )
             elif not response.json().get('ok') and response.json().get('error') == 'ratelimited':
                 print('Slack API rate limit reached - cooling off')
                 time.sleep(60)
-                self._make_request(url, params, data, method, verify_ssl, pagination)
+                self._make_request(
+                    url,
+                    params,
+                    data,
+                    method,
+                    verify_ssl,
+                    pagination
+                )
             elif not response.json().get('ok'):
                 raise SlackAPIError()
             else:
                 if not response.json().get('offset'):
                     return [response.json()]
                 else:
-                    return self._pagination_loop(response, pagination, method, relative_url, params, data, verify_ssl)
+                    return self._pagination_loop(
+                        response,
+                        pagination,
+                        method,
+                        relative_url,
+                        params,
+                        data,
+                        verify_ssl
+                    )
         except ScopeError:
             raise ScopeError(f"Missing required scope: {response.json().get('needed')}")
         except SlackAPIError:
@@ -122,8 +170,7 @@ class SlackAPI(object):
 
         return self._make_request('discovery.enterprise.info')[0].get('enterprise')
 
-    def get_all_users(self,
-                      offset: str = None) -> list[dict]:
+    def get_all_users(self, offset: str = None) -> list[dict]:
         """ Get all users in a Grid
 
         Returns:
@@ -219,8 +266,7 @@ class SlackAPI(object):
 
         return _format_results(conversations, 'channels')
 
-    def get_recent_conversations(self,
-                                 latest: float = None) -> list[dict]:
+    def get_recent_conversations(self, latest: float = None) -> list[dict]:
         """
         Args:
             latest: Timestamp within the last 24 hours to shorten or lengthen the requested timespan.
@@ -320,6 +366,7 @@ class SlackAPI(object):
         """ Provides a list of everyone in a given channel, private channel, MDPM or DM
 
         Args:
+            team_id: ID of the team the channel is in
             include_member_left: Whether to include members who have left the channel
             channel_id: ID of the channel to get members for
         Returns:
@@ -586,8 +633,7 @@ class SlackAPI(object):
 
         return _format_results(drafts, 'files')
 
-    def get_file_info(self,
-                      file_id: str) -> dict:
+    def get_file_info(self, file_id: str) -> dict:
         """ Get all comments for a file
 
         Args:
@@ -625,8 +671,7 @@ class SlackAPI(object):
 
         return self._make_request('discovery.file.tombstone', method='POST', params=params)[0].get('file')
 
-    def restore_file(self,
-                     file_id: str) -> dict:
+    def restore_file(self, file_id: str) -> dict:
         """ Restore a tombstoned file
 
         Args:
@@ -641,8 +686,7 @@ class SlackAPI(object):
 
         return self._make_request('discovery.file.restore', method='POST', params=params)[0].get('file')
 
-    def delete_file(self,
-                    file_id: str) -> dict:
+    def delete_file(self, file_id: str) -> dict:
         """ Delete a file
 
         Args:
@@ -657,8 +701,7 @@ class SlackAPI(object):
 
         return self._make_request('discovery.file.delete', method='POST', params=params)[0].get('file')
 
-    def get_team_info(self,
-                      team_id: str) -> dict:
+    def get_team_info(self, team_id: str) -> dict:
         """ Get information on a Slack Workspace
         Requires the User Scope team:read
 
@@ -675,8 +718,7 @@ class SlackAPI(object):
         return self._make_request('team.info', params=params)[0].get('team')
 
 
-def _format_results(results_list: list,
-                    identifier: str) -> list[dict]:
+def _format_results(results_list: list, identifier: str) -> list[dict]:
     """ Format a JSON result from the Slack API. Results come in the format below:
     {
         "ok": true,
@@ -714,8 +756,7 @@ def _flatten_list(input_list) -> list:
     return [item for sublist in input_list for item in sublist]
 
 
-def _location_verification(conv: conversation.Conversation,
-                           sig: signature.Signature) -> bool:
+def _location_verification(conv: conversation.Conversation, sig: signature.Signature) -> bool:
     """ Verify post location against selected locations in the signature
         e.g: do not return direct messages if they have not been specified
 
@@ -885,9 +926,7 @@ def tombstone_file(slack_connection: SlackAPI,
     """
 
     try:
-        slack_connection.tombstone_file(file.get('id'),
-                                        'File Removed',
-                                        content)
+        slack_connection.tombstone_file(file.get('id'), 'File Removed', content)
     except Exception as e:
         raise e
 
@@ -904,10 +943,12 @@ def tombstone_message(slack_connection: SlackAPI,
     """
 
     try:
-        slack_connection.tombstone_message(message.get('timestamp'),
-                                           message.get('conversation').get('id'),
-                                           message.get('team'),
-                                           content)
+        slack_connection.tombstone_message(
+            message.get('timestamp'),
+            message.get('conversation').get('id'),
+            message.get('team'),
+            content
+        )
     except Exception as e:
         raise e
 
@@ -942,15 +983,17 @@ def search_message_matches(sig: signature.Signature,
         processes = []
 
         for message_list in list_of_chunks:
-            p = multiprocessing.Process(target=_mp_find_messages_worker,
-                                        args=(
-                                            sig,
-                                            slack_connection,
-                                            users_list,
-                                            message_list,
-                                            workspaces_list,
-                                            results
-                                        ))
+            p = multiprocessing.Process(
+                target=_mp_find_messages_worker,
+                args=(
+                    sig,
+                    slack_connection,
+                    users_list,
+                    message_list,
+                    workspaces_list,
+                    results
+                )
+            )
             processes.append(p)
             p.start()
 
@@ -992,13 +1035,15 @@ def search_file_matches(sig: signature.Signature,
         processes = []
 
         for message_list in list_of_chunks:
-            p = multiprocessing.Process(target=_mp_find_files_worker,
-                                        args=(
-                                            sig,
-                                            users_list,
-                                            message_list,
-                                            results
-                                        ))
+            p = multiprocessing.Process(
+                target=_mp_find_files_worker,
+                args=(
+                    sig,
+                    users_list,
+                    message_list,
+                    results
+                )
+            )
             processes.append(p)
             p.start()
 
@@ -1156,13 +1201,15 @@ def get_all_messages(slack_connection: SlackAPI,
     processes = []
 
     for conv_list in list_of_chunks:
-        p = multiprocessing.Process(target=_mp_message_search_worker,
-                                    args=(
-                                        conv_list,
-                                        slack_connection,
-                                        timeframe,
-                                        results
-                                    ))
+        p = multiprocessing.Process(
+            target=_mp_message_search_worker,
+            args=(
+                conv_list,
+                slack_connection,
+                timeframe,
+                results
+            )
+        )
         processes.append(p)
         p.start()
 
@@ -1191,12 +1238,14 @@ def get_all_files(slack_connection: SlackAPI,
     processes = []
 
     for file_list in list_of_chunks:
-        p = multiprocessing.Process(target=_mp_file_search_worker,
-                                    args=(
-                                        file_list,
-                                        slack_connection,
-                                        results
-                                    ))
+        p = multiprocessing.Process(
+            target=_mp_file_search_worker,
+            args=(
+                file_list,
+                slack_connection,
+                results
+            )
+        )
         processes.append(p)
         p.start()
 
@@ -1226,13 +1275,15 @@ def get_all_drafts(slack_connection: SlackAPI,
     processes = []
 
     for workspace in list_of_chunks:
-        p = multiprocessing.Process(target=_mp_draft_search_worker,
-                                    args=(
-                                        workspace,
-                                        slack_connection,
-                                        timeframe,
-                                        results
-                                    ))
+        p = multiprocessing.Process(
+            target=_mp_draft_search_worker,
+            args=(
+                workspace,
+                slack_connection,
+                timeframe,
+                results
+            )
+        )
         processes.append(p)
         p.start()
 
@@ -1292,7 +1343,7 @@ def _regex_search_message(message: dict, regex: re.Pattern) -> str:
         return regex.search(str(message.get('text'))).group(0)
 
 
-### Multiprocessing Worker Functions
+# Multiprocessing Worker Functions
 def _mp_draft_search_worker(workspaces_list: list[workspace.Workspace],
                             slack_connection: SlackAPI,
                             timeframe: int,

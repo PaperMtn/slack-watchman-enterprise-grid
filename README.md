@@ -31,17 +31,21 @@ Slack Watchman looks for this exposed data across all workspaces in the Enterpri
 
 ## Usage
 ```
-usage: slack-watchman-eg [-h] [--hours HOURS] [--minutes MINUTES] [--version] [--users] [--workspaces] [--tombstone]
+usage: slack-watchman-eg [-h] [--hours HOURS] [--minutes MINUTES] [--cores CORES] [--version] [--users] [--workspaces] [--sandbox] [--tombstone] [--tombstone-text-file TOMBSTONE_FILEPATH]
 
 Monitoring your Slack Enterprise Grid for sensitive information
 
-optional arguments:
-  -h, --help         show this help message and exit
-  --hours HOURS      How far back to search in whole hours between 1-24. Defaults to 1 if no acceptable value given
-  --minutes MINUTES  How far back to search in whole minutes between 1-60
-  --cores CORES      Number of cores to use between 1-12
-  --version          show program's version number and exit
-  --users            Find all users
-  --workspaces       Find all workspaces
-  --tombstone        Tombstone messages
+options:
+  -h, --help            show this help message and exit
+  --hours HOURS         How far back to search in whole hours between 1-24. Defaults to 1 if no acceptable value given
+  --minutes MINUTES     How far back to search in whole minutes between 1-60
+  --cores CORES         Number of cores to use between 1-12
+  --version             show program's version number and exit
+  --users               Find all users
+  --workspaces          Find all workspaces
+  --sandbox             Search using only sandbox signatures
+  --tombstone           Tombstone (REMOVE) all matching messages
+  --tombstone-text-file TOMBSTONE_FILEPATH
+                        Path to file containing custom tombstone notification text (Optional)
+
 ```
