@@ -1,0 +1,28 @@
+---
+filename: placeholder.yaml
+enabled: false
+meta:
+  name: Placeholder signature
+  author: PaperMtn
+  date: '2021-09-24'
+  description: Placeholder signature to populate sandbox directory
+  severity: '70'
+tombstone: false
+scope:
+- messages
+- drafts
+file_types:
+locations:
+  - public
+  - private
+  - connect
+  - im
+  - mpim
+test_cases:
+  match_cases:
+  - ''
+  fail_cases:
+  - ''
+search_strings:
+- 'placeholder'
+pattern: ''
