@@ -826,11 +826,8 @@ def initiate_slack_connection():
 
     try:
         token = os.environ['SLACK_WATCHMAN_EG_TOKEN']
-    except KeyError:
-        with open(f'{os.path.expanduser("~")}/watchman.conf') as yaml_file:
-            config = yaml.safe_load(yaml_file)
-
-        token = config.get('src').get('token')
+    except Exception as e:
+        raise e
 
     return SlackAPI(token)
 
