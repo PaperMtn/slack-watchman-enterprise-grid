@@ -1,40 +1,25 @@
 # Contributing
 
-Thanks for being interested in contributing to Anubis!
+Thanks for being interested in contributing to Slack Watchman for Enterprise Grid. I'm always looking for more contributions towards the project.
 
-The project layout is currently fairly straight forward - Anubis uses docopt to parse through the CLI parameters in CLI.py, and uses the comment at the top for any new options or flags. 
-
-It will automatically use the long form of the parameter for any new ones, if provided.
-
-So, for example, to add a new parameter `x` (to be invoked with `anubis -t example.com -x`), we'd change the header definition to add x, like so
-
-```  anubis -t TARGET [-o FILENAME] [-noispbdvx] [-w SCAN]```
-
-And then add the explanation of what it does below, like so
-
-```-x                 sample new command```
-
-If we want a long form, we supply it with two dashes
-
-```-x --example             sample new commmand```
-
-And now to reference it within the code, we'd do `options["--example"]`, which is either True or False, or the contents of the supplied parameter if we're passing something along with the flag.
+The two main areas where you can contribute are:
+- Signature files
+- Additional functionality
 
 
-## Adding new sources
+## Adding new signatures
+Slack Watchman runs using YAML signature files that are stored in the `signature` directory. They define what to search Slack for, and are the heart of the application.
 
-The bulk of the code is in `anubis/commands/target.py`, starting with the `run()` method.
+Instructions on how to create your own signature files can be found in `docs\signatures.md`
 
-The target URL is in `self.options["TARGET"]`. Feel free to write any additional functions, and then add them to the thread pool in run. 
+If you do write your own signatures, please contribute them to the project by creating a pull request.
 
-Your function should not return anything - rather, if it finds any subdomains it should add them to `self.domains`. Make sure it's not been inserted already, and that it's a valid subdomain.
 
-Handle exceptions with `self.handle_exception(e,"stdout message")`
-
-Print to stdout with either `print()` or `ColorPrint.color("message")`
-
-If you have any questions or this is unclear, feel free to open an issue or contact @JonLuca.
-
+## Additional functionality
+You can make recommendations for new functionality via raising issues using the feature request template. Even better, you could contribute the additional functionality yourself and create a pull request for the changes to be added to a future release.
 ## Style
 
-2 spaces for indentation. Follow Google and PEP8 guidelines for the  most part, but I only care as far as it being consistent through the project. 
+Slack Watchman for Enterprise Grid follows Google style guidelines mostly, but the main thing is to stay consistent to the style already in use.
+
+## Documentation
+Currently, documentation and additional resources are kept on [my blog](https://papermtn.co.uk/category/tools/slack-watchman-for-enterprise-grid/) 
