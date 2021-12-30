@@ -9,6 +9,8 @@
 
 Slack Watchman for Enterprise Grid uses the Slack Enterprise Grid DLP API to look for potentially sensitive data exposed in your Slack Enterprise.
 
+**Note**: Slack Watchman for Enterprise Grid is designed for Enterprise Grid subscribers of Slack only. If you use Slack without an Enterprise subscription, you can use the standard version of [Slack Watchman](https://github.com/PaperMtn/slack-watchman)
+
 ### Features
 Slack Watchman for Enterprise Grid looks for:
 
@@ -100,7 +102,7 @@ discovery:write
 team:read
 users:read
 ```
-**Note**: `discovery:read` and `discovery:write` can only be added to an app by Slack themselves, you will need to contact you CSM. They will also provide you with instructions on how to install the app at organisation level and retrieve the access token.
+**Note**: `discovery:read` and `discovery:write` can only be added to an app by Slack themselves, you will need to contact your Slack CSM. They will also provide you with instructions on how to install the app at organisation level and retrieve the access token.
 
 #### Providing token
 Provide the token in the environment variable `SLACK_WATCHMAN_EG_TOKEN`
