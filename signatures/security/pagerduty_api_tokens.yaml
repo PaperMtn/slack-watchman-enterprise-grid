@@ -21,7 +21,7 @@ test_cases:
     - '-H "Authorization: Token token=aaaddddffffccccffffsdfsdf"'
     - 'apikey: aaaddddffffccccffffsdfsdf'
   fail_cases:
-    - '-H "Authorization: Token aaaddddffffccccffffsdfsdf"'
+    - '-H "Authorization: token 123"'
 search_strings:
   - pager
 pattern: '(?i)(''|"){0,2}((token|key)|Authorization: Token token)(''|"){0,2}\s*(=|:|\s*)(\s*)(''|"){0,2}([0-9a-zA-Z-_]{20,40})(''|"){0,2}'

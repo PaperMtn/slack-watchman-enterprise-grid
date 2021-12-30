@@ -58,7 +58,7 @@ class Message(Post):
     text: str
     type: str
     blocks: list
-    timestamp: int or float or str
+    timestamp: float
     conversation: dataclass
 
 
