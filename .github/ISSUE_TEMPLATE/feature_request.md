@@ -17,4 +17,8 @@ A clear and concise description of what you want to happen.
 A clear and concise description of any alternative solutions or features you've considered.
 
 **Additional context**
+<<<<<<< HEAD
 Add any other context or screenshots about the feature request here.
+=======
+Add any other context or screenshots about the feature request here.
+>>>>>>> 500caddadff50ff27d7100a970f2971515df6f4b
