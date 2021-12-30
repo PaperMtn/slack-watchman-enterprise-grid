@@ -6,18 +6,17 @@ import os
 import re
 import requests
 import time
-import yaml
 import calendar
 from requests.packages.urllib3.util import Retry
 from requests.adapters import HTTPAdapter
 
-from src.slack_watchman import signature
-from src.slack_watchman import logger
-from src.slack_watchman.slack_objects import workspace
-from src.slack_watchman.slack_objects import user
-from src.slack_watchman.slack_objects import enterprise
-from src.slack_watchman.slack_objects import conversation
-from src.slack_watchman.slack_objects import post
+from src.slack_watchman_eg import signature
+from src.slack_watchman_eg import logger
+from src.slack_watchman_eg.slack_objects import workspace
+from src.slack_watchman_eg.slack_objects import user
+from src.slack_watchman_eg.slack_objects import enterprise
+from src.slack_watchman_eg.slack_objects import conversation
+from src.slack_watchman_eg.slack_objects import post
 
 # Default timeframe of 1 hour
 DEFAULT_TIMEFRAME = calendar.timegm(time.gmtime()) - 3600
