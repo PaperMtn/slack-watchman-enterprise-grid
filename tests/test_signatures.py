@@ -3,9 +3,10 @@ import os
 import unittest
 from pathlib import Path
 
-from src import signature
+from slack_watchman_eg import signature
 
-SIGNATURES_PATH = (Path(__file__).parents[1] / 'signatures').resolve()
+SIGNATURES_PATH = (Path(__file__).parents[1] / 'src/signatures').resolve()
+
 
 def load_signatures() -> list:
     """Load signatures from YAML files

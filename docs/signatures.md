@@ -32,7 +32,7 @@ search_strings:
 pattern: # Regex pattern to filter out false positives
 ```
 
-Signatures are stored in the directory `signatures`, so you can see examples there.
+Signatures are stored in the directory `src/signatures`, so you can see examples there.
 
 **Tombstone**
 Whether to use the Slack Enterprise Grid tombstone feature on matches to this signature. This removes the message/file and replaces it with placeholder text informing users the file has been removed, and is being reviewed.

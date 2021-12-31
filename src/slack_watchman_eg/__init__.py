@@ -5,12 +5,12 @@ import time
 import calendar
 from pathlib import Path
 
-from src.slack_watchman_eg import __version__
-from src.slack_watchman_eg import logger as logger
-from src.slack_watchman_eg import slack_wrapper
-from src.slack_watchman_eg import signature
+from slack_watchman_eg import __version__
+from slack_watchman_eg import logger as logger
+from slack_watchman_eg import slack_wrapper
+from slack_watchman_eg import signature
 
-SIGNATURES_PATH = (Path(__file__).parents[2] / 'signatures').resolve()
+SIGNATURES_PATH = (Path(__file__).parents[1] / 'signatures').resolve()
 OUTPUT_LOGGER: logger.StdoutLogger
 TOMBSTONE_CONTENT = None
 
