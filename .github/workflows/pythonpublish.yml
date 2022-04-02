@@ -20,8 +20,7 @@ jobs:
         python-version: '3.x'
     - name: Install dependencies
       run: |
-        python3 -m pip install --upgrade pip
-        pip install build
+        python3 -m pip install --upgrade pip twine build
     - name: Build and publish
       env:
         TWINE_USERNAME: ${{ '__token__' }}
