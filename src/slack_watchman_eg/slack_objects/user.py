@@ -1,7 +1,7 @@
 import time
 from dataclasses import dataclass
 
-from slack_watchman_eg.slack_objects import workspace
+from . import workspace
 
 
 def _convert_timestamp(timestamp: str or int) -> str or None:
