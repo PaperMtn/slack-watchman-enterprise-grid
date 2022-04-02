@@ -169,7 +169,7 @@ class SlackAPI(object):
 
         return self._make_request('discovery.enterprise.info')[0].get('enterprise')
 
-    def get_all_users(self, offset: str = None) -> list[dict]:
+    def get_all_users(self, offset: str = None) -> [dict]:
         """ Get all users in a Grid
 
         Returns:
@@ -203,7 +203,7 @@ class SlackAPI(object):
                                private: bool = None,
                                im: bool = None,
                                mpim: bool = None,
-                               historical: bool = None) -> list[dict]:
+                               historical: bool = None) -> [dict]:
         """ return all conversations a user is involved in
 
         Args:
@@ -237,7 +237,7 @@ class SlackAPI(object):
                               im: bool = None,
                               mpim: bool = None,
                               ext_shared: bool = None,
-                              historical: bool = None) -> list[dict]:
+                              historical: bool = None) -> [dict]:
         """ return all conversations in a Grid
 
         Args:
@@ -265,7 +265,7 @@ class SlackAPI(object):
 
         return _format_results(conversations, 'channels')
 
-    def get_recent_conversations(self, latest: float = None) -> list[dict]:
+    def get_recent_conversations(self, latest: float = None) -> [dict]:
         """
         Args:
             latest: Timestamp within the last 24 hours to shorten or lengthen the requested timespan.
@@ -287,7 +287,7 @@ class SlackAPI(object):
                                  channel_id: str,
                                  team_id: str = None,
                                  latest: float = None,
-                                 oldest: float = None) -> list[dict]:
+                                 oldest: float = None) -> [dict]:
         """ Retrieves the history of the channel-object. This can be thought of as
          the state of the conversation in the client: it’s what the users are seeing.
 
@@ -315,7 +315,7 @@ class SlackAPI(object):
                                channel_id: str,
                                team_id: str,
                                latest: float = None,
-                               oldest: float = None) -> list[dict]:
+                               oldest: float = None) -> [dict]:
         """ Returns edit and delete records of messages
 
         Args:
@@ -341,7 +341,7 @@ class SlackAPI(object):
 
     def get_conversation_info(self,
                               channel_id: str,
-                              team_id: str = None) -> list[dict]:
+                              team_id: str = None) -> [dict]:
         """ Provides a comprehensive overview of a single channel outside of its message history
 
         Args:
@@ -361,7 +361,7 @@ class SlackAPI(object):
     def get_conversation_members(self,
                                  channel_id: str,
                                  team_id: str = None,
-                                 include_member_left: bool = None) -> list[dict]:
+                                 include_member_left: bool = None) -> [dict]:
         """ Provides a list of everyone in a given channel, private channel, MDPM or DM
 
         Args:
@@ -385,7 +385,7 @@ class SlackAPI(object):
     def get_conversation_renames(self,
                                  latest: float = None,
                                  oldest: float = None,
-                                 private: bool = None) -> list[dict]:
+                                 private: bool = None) -> [dict]:
         """ Get all channel renames that have occurred in an organisation
 
         Args:
@@ -411,7 +411,7 @@ class SlackAPI(object):
                              query: str,
                              include_messages: bool = None,
                              latest: float = None,
-                             oldest: float = None) -> list[dict]:
+                             oldest: float = None) -> [dict]:
         """ Find channels and messages within an instance that contain the provided search term.
 
         Args:
@@ -562,7 +562,7 @@ class SlackAPI(object):
     def list_drafts(self,
                     team_id: str,
                     oldest: int = None,
-                    latest: int = None) -> list[dict]:
+                    latest: int = None) -> [dict]:
         """
 
         Args:
@@ -613,7 +613,7 @@ class SlackAPI(object):
 
     def list_files(self,
                    oldest: int or str = None,
-                   latest: int or str = None) -> list[dict]:
+                   latest: int or str = None) -> [dict]:
         """ Returns files uploaded within a specified timeframe.
 
         Args:
@@ -717,7 +717,7 @@ class SlackAPI(object):
         return self._make_request('team.info', params=params)[0].get('team')
 
 
-def _format_results(results_list: list, identifier: str) -> list[dict]:
+def _format_results(results_list: list, identifier: str) -> [dict]:
     """ Format a JSON result from the Slack API. Results come in the format below:
     {
         "ok": true,
@@ -791,7 +791,7 @@ def _convert_timestamp(timestamp: str or int) -> str:
     return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(timestamp)))
 
 
-def _deduplicate(input_list: list) -> list[dict]:
+def _deduplicate(input_list: list) -> [dict]:
     """ Removes duplicates where results are returned by multiple queries
     Nested class handles JSON encoding for dataclass objects
 
@@ -844,7 +844,7 @@ def get_enterprise(slack_connection: SlackAPI) -> enterprise.Enterprise:
     return enterprise.create_from_dict(slack_connection.get_team_info(enterprise_info.get('id')))
 
 
-def get_workspaces(slack_connection: SlackAPI) -> list[workspace.Workspace]:
+def get_workspaces(slack_connection: SlackAPI) -> [workspace.Workspace]:
     """ Get all workspaces in the Slack environment
 
     Args:
@@ -859,7 +859,7 @@ def get_workspaces(slack_connection: SlackAPI) -> list[workspace.Workspace]:
 
 
 def get_users(slack_connection: SlackAPI,
-              workspaces_list: list[workspace.Workspace]) -> list[user.User]:
+              workspaces_list: [workspace.Workspace]) -> [user.User]:
     """ Find all users in the Enterprise
 
     Args:
@@ -884,7 +884,7 @@ def get_users(slack_connection: SlackAPI,
 
 
 def get_conversations(slack_connection: SlackAPI,
-                      timeframe: int = DEFAULT_TIMEFRAME) -> list[conversation.Conversation]:
+                      timeframe: int = DEFAULT_TIMEFRAME) -> [conversation.Conversation]:
     """ Gets all conversations created in a given timeframe, returns a list of
     Conversation objects
 
@@ -951,11 +951,11 @@ def tombstone_message(slack_connection: SlackAPI,
 
 def search_message_matches(sig: signature.Signature,
                            slack_connection: SlackAPI,
-                           users_list: list[user.User],
-                           message_list: list[post.Message],
-                           workspaces_list: list[workspace.Workspace],
+                           users_list: [user.User],
+                           message_list: [post.Message],
+                           workspaces_list: [workspace.Workspace],
                            cores: int,
-                           log: logger.StdoutLogger) -> list[dict]:
+                           log: logger.StdoutLogger) -> [dict]:
     """ Use the search API to find messages posted in a certain timeframe
     matching search terms in the signature file. These are then compared against a regex
     to assess whether they contain sensitive data matching the signature.
@@ -1007,10 +1007,10 @@ def search_message_matches(sig: signature.Signature,
 
 
 def search_file_matches(sig: signature.Signature,
-                        users_list: list[user.User],
-                        files_list: list[post.File],
+                        users_list: [user.User],
+                        files_list: [post.File],
                         cores: int,
-                        log: logger.StdoutLogger) -> list[dict]:
+                        log: logger.StdoutLogger) -> [dict]:
     """ Use the search API to find files posted in a certain timeframe
     matching search terms in the signature file.
 
@@ -1058,10 +1058,10 @@ def search_file_matches(sig: signature.Signature,
 
 def search_draft_matches(slack_connection: SlackAPI,
                          sig: signature.Signature,
-                         drafts_list: list[post.Draft],
-                         users_list: list[user.User],
+                         drafts_list: [post.Draft],
+                         users_list: [user.User],
                          log: logger.StdoutLogger,
-                         timeframe: int = DEFAULT_TIMEFRAME) -> list[dict]:
+                         timeframe: int = DEFAULT_TIMEFRAME) -> [dict]:
     """ Find drafts posted in a certain timeframe
     matching search terms in the signature file. These are then compared against a regex
     to assess whether they contain sensitive data matching the signature.
@@ -1149,7 +1149,7 @@ def search_draft_matches(slack_connection: SlackAPI,
         log.log_critical(e)
 
 
-def find_shared_channels(slack_connection: SlackAPI) -> list[conversation.Conversation]:
+def find_shared_channels(slack_connection: SlackAPI) -> [conversation.Conversation]:
     """ Find all shared channels. These could be either shared between
     Workspaces in an Enterprise Grid, or Slack Connect external channels.
 
@@ -1180,7 +1180,7 @@ def find_shared_channels(slack_connection: SlackAPI) -> list[conversation.Conver
 
 def get_all_messages(slack_connection: SlackAPI,
                      cores: int,
-                     timeframe: int = DEFAULT_TIMEFRAME) -> list[post.Message]:
+                     timeframe: int = DEFAULT_TIMEFRAME) -> [post.Message]:
     """ Get all messages in the Enterprise for a given timeframe
 
     Args:
@@ -1217,7 +1217,7 @@ def get_all_messages(slack_connection: SlackAPI,
 
 def get_all_files(slack_connection: SlackAPI,
                   cores: int,
-                  timeframe: int = DEFAULT_TIMEFRAME) -> list[post.File]:
+                  timeframe: int = DEFAULT_TIMEFRAME) -> [post.File]:
     """ Get all files in the Enterprise for a given timeframe
 
     Args:
@@ -1252,9 +1252,9 @@ def get_all_files(slack_connection: SlackAPI,
 
 
 def get_all_drafts(slack_connection: SlackAPI,
-                   workspaces_list: list[workspace.Workspace],
+                   workspaces_list: [workspace.Workspace],
                    cores: int,
-                   timeframe: int = DEFAULT_TIMEFRAME) -> list[post.Draft]:
+                   timeframe: int = DEFAULT_TIMEFRAME) -> [post.Draft]:
     """ Get all drafts in the Enterprise for a given timeframe
 
     Args:
@@ -1340,7 +1340,7 @@ def _regex_search_message(message: dict, regex: re.Pattern) -> str:
 
 
 # Multiprocessing Worker Functions
-def _mp_draft_search_worker(workspaces_list: list[workspace.Workspace],
+def _mp_draft_search_worker(workspaces_list: [workspace.Workspace],
                             slack_connection: SlackAPI,
                             timeframe: int,
                             results: list):
@@ -1424,9 +1424,9 @@ def _mp_file_search_worker(file_list: list,
 
 def _mp_find_messages_worker(sig: signature.Signature,
                              slack_connection: SlackAPI,
-                             users_list: list[user.User],
-                             message_list: list[dict],
-                             workspaces_list: list[workspace.Workspace],
+                             users_list: [user.User],
+                             message_list: [dict],
+                             workspaces_list: [workspace.Workspace],
                              results):
     """ MULTIPROCESSING WORKER - Iterates through lists of messages to find matches against a signature
 
@@ -1482,8 +1482,8 @@ def _mp_find_messages_worker(sig: signature.Signature,
 
 
 def _mp_find_files_worker(sig: signature.Signature,
-                          users_list: list[user.User],
-                          file_list: list[post.File],
+                          users_list: [user.User],
+                          file_list: [post.File],
                           results):
     """ MULTIPROCESSING WORKER - Iterates through lists of files to find matches against a signature
 

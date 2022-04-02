@@ -92,7 +92,7 @@ class User(object):
     is_email_confirmed: bool
     who_can_share_contact_card: str
     is_workflow_bot: bool
-    workspaces: list[workspace.Workspace]
+    workspaces: [workspace.Workspace]
 
 
 def create_from_dict(user_dict: dict, workspaces: list) -> User:

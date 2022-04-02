@@ -15,7 +15,7 @@ OUTPUT_LOGGER: logger.StdoutLogger
 TOMBSTONE_CONTENT = None
 
 
-def load_signatures(sandbox: bool) -> list[signature.Signature]:
+def load_signatures(sandbox: bool) -> [signature.Signature]:
     """
     Load signatures from YAML files
 
