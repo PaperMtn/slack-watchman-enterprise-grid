@@ -16,6 +16,8 @@ locations:
   - public
   - private
   - connect
+  - im
+  - mpim
 test_cases:
   match_cases:
     - 'APIKEY: NRRA-6baa13a5c9e652b3bdfeb7c7cde9056c381a190de9'

@@ -16,6 +16,8 @@ locations:
   - public
   - private
   - connect
+  - im
+  - mpim
 test_cases:
   match_cases:
     - 'eyJrIjoiO9gpnHNvvt1vSjerEWen9yZtuZqZh3oLwB342dQbdk'

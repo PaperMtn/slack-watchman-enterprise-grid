@@ -18,6 +18,8 @@ locations:
   - public
   - private
   - connect
+  - im
+  - mpim
 test_cases:
   match_cases:
   - blank

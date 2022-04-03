@@ -16,6 +16,8 @@ locations:
   - public
   - private
   - connect
+  - im
+  - mpim
 test_cases:
   match_cases:
   - https://hooks.slack.com/services/T01010101/Babababab/aabab1212abab1212abababa
