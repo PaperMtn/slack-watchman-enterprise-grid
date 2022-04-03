@@ -5,17 +5,17 @@ import time
 import calendar
 from pathlib import Path
 
-from slack_watchman_eg import __version__
-from slack_watchman_eg import logger as logger
-from slack_watchman_eg import slack_wrapper
-from slack_watchman_eg import signature
+from . import __version__
+from . import logger as logger
+from . import slack_wrapper
+from . import signature
 
 SIGNATURES_PATH = (Path(__file__).parents[1] / 'signatures').resolve()
 OUTPUT_LOGGER: logger.StdoutLogger
 TOMBSTONE_CONTENT = None
 
 
-def load_signatures(sandbox: bool) -> list[signature.Signature]:
+def load_signatures(sandbox: bool) -> [signature.Signature]:
     """
     Load signatures from YAML files
 

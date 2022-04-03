@@ -16,6 +16,8 @@ locations:
   - public
   - private
   - connect
+  - im
+  - mpim
 test_cases:
   match_cases:
   - https://api:key-62833bf8c07c531abxxxxxxxxxxa6678@api.mailgun.net/

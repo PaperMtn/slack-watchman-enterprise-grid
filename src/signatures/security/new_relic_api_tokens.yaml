@@ -16,6 +16,8 @@ locations:
   - public
   - private
   - connect
+  - im
+  - mpim
 test_cases:
   match_cases:
     - "'X-Api-Key': '8ETcQQkZ0nsAeRX1Hqpt9MS8xnxdYDlmMAu1DgLmnq8U2r2'"
