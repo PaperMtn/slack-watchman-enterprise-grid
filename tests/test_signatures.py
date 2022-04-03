@@ -3,7 +3,7 @@ import os
 import unittest
 from pathlib import Path
 
-from slack_watchman_eg import signature
+from src.slack_watchman_eg import signature
 
 SIGNATURES_PATH = (Path(__file__).parents[1] / 'src/signatures').resolve()
 

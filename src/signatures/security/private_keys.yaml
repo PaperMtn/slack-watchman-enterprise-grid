@@ -16,6 +16,8 @@ locations:
   - public
   - private
   - connect
+  - im
+  - mpim
 test_cases:
   match_cases:
   - '"private_key": "-----BEGIN PRIVATE KEY-----AABBCCDDEEFFGGHHIIJJKK=\n-----END

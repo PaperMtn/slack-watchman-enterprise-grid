@@ -16,6 +16,8 @@ locations:
   - public
   - private
   - connect
+  - im
+  - mpim
 test_cases:
   match_cases:
   - API_KEY = xoxb-11111111111-a1a1a1a1a1a1a1a1a1a1a1a1

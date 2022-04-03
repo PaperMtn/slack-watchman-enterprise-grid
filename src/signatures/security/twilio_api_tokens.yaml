@@ -16,6 +16,8 @@ locations:
   - public
   - private
   - connect
+  - im
+  - mpim
 test_cases:
   match_cases:
   - SKaaaaaaaa413272ec0a65f2fd1b14ab10

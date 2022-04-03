@@ -16,6 +16,8 @@ locations:
   - public
   - private
   - connect
+  - im
+  - mpim
 test_cases:
   match_cases:
   - 'access_token$production$0000000000000000$00000000000000000000000000000000'
