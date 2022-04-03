@@ -16,6 +16,8 @@ locations:
   - public
   - private
   - connect
+  - im
+  - mpim
 test_cases:
   match_cases:
   - 'https://github.com/login/oauth/authorize/$access_token=abcabc123123abcabc123123&token_type=bearer'

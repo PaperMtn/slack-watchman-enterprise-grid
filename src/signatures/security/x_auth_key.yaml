@@ -16,6 +16,8 @@ locations:
   - public
   - private
   - connect
+  - im
+  - mpim
 test_cases:
   match_cases:
     - 'H "X-Auth-Key:1234567893feefc5f0q5000bfo0c38d90bbeb"'

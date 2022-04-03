@@ -16,6 +16,8 @@ locations:
   - public
   - private
   - connect
+  - im
+  - mpim
 test_cases:
   match_cases:
   - AbCdEfGh1234567890AbAbAb+aAb1111111111+=
