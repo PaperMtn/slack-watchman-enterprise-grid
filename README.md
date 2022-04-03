@@ -1,9 +1,10 @@
-<img src="https://i.imgur.com/86TiciX.png" width="550">
+<img src="https://i.imgur.com/VPgx6ra.png" width="550">
 
 # Slack Watchman for Enterprise Grid
 ![Python 2.7 and 3 compatible](https://img.shields.io/pypi/pyversions/slack-watchman-eg)
 ![PyPI version](https://img.shields.io/pypi/v/slack-watchman-eg.svg)
 ![License: MIT](https://img.shields.io/pypi/l/slack-watchman-eg.svg)
+
 
 ## About Slack Watchman for Enterprise Grid
 
@@ -120,7 +121,22 @@ python3 -m pip build
 python3 -m pip install --force-reinstall dist/*.whl
 ```
 
-Scripts for building and installing from source for Mac, Linux and Windows are in the `scripts` directory
+## Docker Image
+
+Slack Watchman for Enterprise Grid is also available from the Docker hub as a Docker image:
+
+`docker pull papermountain/slack-watchman-eg:latest`
+
+You can then run Slack Watchman for Enterprise Grid in a container, making sure you pass the required environment variables:
+
+```
+// help
+docker run --rm papermountain/slack-watchman-eg -h
+
+// scan all
+docker run --rm -e SLACK_WATCHMAN_EG_TOKENN=xoxp... papermountain/slack-watchman-eg --hours 1 --cores 8
+docker run --rm --env-file .env papermountain/slack-watchman-eg --hours 1 --cores 8
+```
 
 ## Usage
 ```
