@@ -1,3 +1,7 @@
+## 1.1.1 - 2022-05-16
+### Added
+- Signature to find Atlassian tokens
+
 ## 1.1.0 - 2022-04-02
 ### Added
 - Docker image now available from the Docker hub, or by building from source.
