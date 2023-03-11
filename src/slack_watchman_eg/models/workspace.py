@@ -20,28 +20,10 @@ def _convert_timestamp(timestamp: str or int) -> str or None:
         return None
 
 
-@dataclass
+@dataclass(slots=True)
 class Workspace(object):
     """ Class that defines Workspaces objects. Workspaces are collections
     of conversations in a Slack Enterprise Organisation"""
-
-    __slots__ = [
-        'id',
-        'name',
-        'domain',
-        'email_domain',
-        'is_verified',
-        'archived',
-        'deleted',
-        'discoverable',
-        'enterprise_id',
-        'enterprise_domain',
-        'enterprise_name',
-        'is_enterprise',
-        'created',
-        'description',
-        'url'
-    ]
 
     id: str
     name: str

@@ -22,44 +22,9 @@ def _convert_timestamp(timestamp: str or int) -> str or None:
         return None
 
 
-@dataclass
+@dataclass(slots=True)
 class User(object):
     """ Class that defines User objects for Slack users"""
-
-    __slots__ = [
-        'id',
-        'name',
-        'deleted',
-        'color',
-        'real_name',
-        'first_name',
-        'last_name',
-        'title',
-        'phone',
-        'skype',
-        'display_name',
-        'fields',
-        'email',
-        'api_app_id',
-        'always_active',
-        'bot_id',
-        'enterprise',
-        'tz',
-        'tz_label',
-        'tz_offset',
-        'is_admin',
-        'is_owner',
-        'is_primary_owner',
-        'is_restricted',
-        'is_ultra_restricted',
-        'is_bot',
-        'is_app_user',
-        'updated',
-        'is_email_confirmed',
-        'who_can_share_contact_card',
-        'is_workflow_bot',
-        'workspaces'
-    ]
 
     id: str
     name: str
@@ -92,7 +57,7 @@ class User(object):
     is_email_confirmed: bool
     who_can_share_contact_card: str
     is_workflow_bot: bool
-    workspaces: [workspace.Workspace]
+    workspaces: list[workspace.Workspace]
 
 
 def create_from_dict(user_dict: dict, workspaces: list) -> User:

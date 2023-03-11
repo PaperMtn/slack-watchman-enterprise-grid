@@ -21,7 +21,7 @@ def _convert_timestamp(timestamp: str or int) -> str or None:
         return None
 
 
-@dataclass
+@dataclass(slots=True)
 class Conversation(object):
     """ Class that defines Conversation objects. Conversations
     could be:
@@ -30,32 +30,6 @@ class Conversation(object):
         - Private channels
         - Public channels
         - Slack connect channels"""
-
-    __slots__ = [
-        'id',
-        'name',
-        'created',
-        'member_count',
-        'is_general',
-        'is_private',
-        'is_im',
-        'is_mpim',
-        'is_deleted',
-        'is_archived',
-        'creator',
-        'is_moved',
-        'name_normalized',
-        'is_global_shared',
-        'is_org_shared',
-        'is_org_mandatory',
-        'is_org_default',
-        'previous_names',
-        'has_guests',
-        'purpose',
-        'topic',
-        'retention',
-        'shared_workspaces'
-    ]
 
     id: str
     name: str
@@ -82,52 +56,28 @@ class Conversation(object):
     shared_workspaces: list
 
 
-@dataclass
+@dataclass(slots=True)
 class Purpose(object):
-    __slots__ = [
-        'text',
-        'set_by',
-        'date_set'
-    ]
-
     text: str
     set_by: str
     date_set: str
 
 
-@dataclass
+@dataclass(slots=True)
 class Topic(object):
-    __slots__ = [
-        'text',
-        'set_by',
-        'date_set'
-    ]
-
     text: str
     set_by: str
     date_set: str
 
 
-@dataclass
+@dataclass(slots=True)
 class Retention(object):
-    __slots__ = [
-        'type',
-        'duration'
-    ]
-
     type: str
     duration: int
 
 
-@dataclass
+@dataclass(slots=True)
 class Shared(object):
-    __slots__ = [
-        'shared_team_ids',
-        'connected_team_ids',
-        'internal_team_ids',
-        'connected_limited_team_ids'
-    ]
-
     shared_team_ids: list
     connected_team_ids: list
     internal_team_ids: list

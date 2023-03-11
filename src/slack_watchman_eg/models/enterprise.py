@@ -1,22 +1,10 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(slots=True)
 class Enterprise(object):
     """ Class that defines Enterprise objects. A Slack Enterprise
     is the top level organisation that contains workspaces"""
-
-    __slots__ = [
-        'id',
-        'name',
-        'domain',
-        'email_domain',
-        'is_verified',
-        'discoverable',
-        'pay_prod_cur',
-        'locale',
-        'url'
-    ]
 
     id: str
     name: str

@@ -20,7 +20,7 @@ def _convert_timestamp(timestamp: str or int) -> str or None:
         return None
 
 
-@dataclass
+@dataclass(slots=True)
 class Post(object):
     """ Parent that defines Post objects. A Slack
     post can be a:
@@ -36,7 +36,7 @@ class Post(object):
     user: str
 
 
-@dataclass
+@dataclass(slots=True)
 class File(Post):
     name: str
     title: str
@@ -53,16 +53,16 @@ class File(Post):
     shares: list
 
 
-@dataclass
+@dataclass(slots=True)
 class Message(Post):
     text: str
     type: str
     blocks: list
-    timestamp: float
+    timestamp: int or float or str
     conversation: dataclass
 
 
-@dataclass
+@dataclass(slots=True)
 class Draft(Post):
     last_updated_ts: str
     last_updated_client: str

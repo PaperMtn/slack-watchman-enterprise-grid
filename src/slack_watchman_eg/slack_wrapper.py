@@ -2,24 +2,23 @@ import dataclasses
 import json
 import multiprocessing
 import numpy
-import os
 import re
 import requests
 import time
 import calendar
-from requests.packages.urllib3.util import Retry
+from urllib3.util import Retry
 from requests.adapters import HTTPAdapter
 
-from . import signature
 from . import logger
-from .slack_objects import workspace
-from .slack_objects import user
-from .slack_objects import enterprise
-from .slack_objects import conversation
-from .slack_objects import post
+from .models import workspace, signature
+from .models import user
+from .models import enterprise
+from .models import conversation
+from .models import post
 
 # Default timeframe of 1 hour
 DEFAULT_TIMEFRAME = calendar.timegm(time.gmtime()) - 3600
+DEFAULT_TIMEOUT = 5
 
 
 class ScopeError(Exception):
@@ -30,6 +29,21 @@ class SlackAPIError(Exception):
     pass
 
 
+# class TimeoutHTTPAdapter(HTTPAdapter):
+#     def __init__(self, *args, **kwargs):
+#         self.timeout = DEFAULT_TIMEOUT
+#         if 'timeout' in kwargs:
+#             self.timeout = kwargs['timeout']
+#             del kwargs['timeout']
+#         super().__init__(*args, **kwargs)
+#
+#     def send(self, request, **kwargs):
+#         timeout = kwargs.get('timeout')
+#         if timeout is None:
+#             kwargs['timeout'] = self.timeout
+#         return super().send(request, **kwargs)
+
+
 class SlackAPI(object):
 
     def __init__(self, token):
@@ -37,7 +51,12 @@ class SlackAPI(object):
         self.base_url = 'https://slack.com/api'
         self.limit = '1000'
         self.session = session = requests.session()
-        session.mount(self.base_url, HTTPAdapter(max_retries=Retry(connect=3, backoff_factor=1)))
+        session.mount(
+            self.base_url,
+            HTTPAdapter(
+                # pool_connections=10,
+                # pool_maxsize=10,
+                max_retries=Retry(total=5, backoff_factor=0.2)))
         session.headers.update({
             'Connection': 'keep-alive, close',
             'Authorization': f'Bearer {self.token}',
@@ -64,7 +83,8 @@ class SlackAPI(object):
                     relative_url,
                     params=params,
                     data=data,
-                    verify=verify_ssl
+                    verify=verify_ssl,
+                    timeout=5
                 )
 
                 params.update({
@@ -78,7 +98,8 @@ class SlackAPI(object):
                     relative_url,
                     params=params,
                     data=data,
-                    verify=verify_ssl
+                    verify=verify_ssl,
+                    timeout=5
                 )
 
                 params.update({
@@ -104,7 +125,8 @@ class SlackAPI(object):
                 relative_url,
                 params=params,
                 data=data,
-                verify=verify_ssl
+                verify=verify_ssl,
+                timeout=5
             )
 
             if not response.json().get('ok') and response.json().get('error') == 'missing_scope':
@@ -116,7 +138,8 @@ class SlackAPI(object):
                     url=relative_url,
                     params=params,
                     data=data,
-                    verify=verify_ssl
+                    verify=verify_ssl,
+                    timeout=5
                 )
                 return self._pagination_loop(
                     response,
@@ -812,7 +835,7 @@ def _deduplicate(input_list: list) -> [dict]:
     return [json.loads(t) for t in json_set]
 
 
-def initiate_slack_connection():
+def initiate_slack_connection(token: str) -> SlackAPI:
     """ Create a Slack API object to use for interacting with the Slack API
     First tries to get the API token from the environment variable:
         SLACK_WATCHMAN_EG_TOKEN
@@ -824,11 +847,9 @@ def initiate_slack_connection():
     """
 
     try:
-        token = os.environ['SLACK_WATCHMAN_EG_TOKEN']
+        return SlackAPI(token)
     except Exception as e:
         raise e
-
-    return SlackAPI(token)
 
 
 def get_enterprise(slack_connection: SlackAPI) -> enterprise.Enterprise:
@@ -1092,51 +1113,52 @@ def search_draft_matches(slack_connection: SlackAPI,
                             element_sub_list = element.get('elements')
                             for esl in element_sub_list:
                                 if esl.get('type') == 'text':
-                                    r = re.compile(sig.pattern)
-                                    if sig.search_strings:
-                                        for search_string in sig.search_strings:
-                                            if str(search_string.lower()) in esl.get('text').lower():
-                                                if r.search(esl.get('text')):
-                                                    draft_user = next((item for item in users_list if
-                                                                       item.id == draft.user), None)
-                                                    team_id = draft.team
-                                                    team = slack_connection.get_team_info(team_id)
-                                                    channel_id = draft.destinations[0]
-                                                    if channel_id.startswith('D'):
-                                                        team_id = get_enterprise(slack_connection).id
+                                    for pattern in sig.patterns:
+                                        r = re.compile(pattern)
+                                        if sig.search_strings:
+                                            for search_string in sig.search_strings:
+                                                if str(search_string.lower()) in esl.get('text').lower():
+                                                    if r.search(esl.get('text')):
+                                                        draft_user = next((item for item in users_list if
+                                                                           item.id == draft.user), None)
+                                                        team_id = draft.team
+                                                        team = slack_connection.get_team_info(team_id)
+                                                        channel_id = draft.destinations[0]
+                                                        if channel_id.startswith('D'):
+                                                            team_id = get_enterprise(slack_connection).id
 
-                                                    conv_info = slack_connection.get_conversation_info(
-                                                        channel_id, team_id)[0]
-                                                    shared = []
-                                                    if conv_info.get('shared').get('shared_team_ids'):
-                                                        for wksp in conv_info.get('shared').get('shared_team_ids'):
-                                                            shared.append(workspace.create_from_dict(
-                                                                slack_connection.get_team_info(wksp)))
-                                                        conv_info['shared'] = shared
-                                                    channel = conversation.create_from_dict(conv_info)
+                                                        conv_info = slack_connection.get_conversation_info(
+                                                            channel_id, team_id)[0]
+                                                        shared = []
+                                                        if conv_info.get('shared').get('shared_team_ids'):
+                                                            for wksp in conv_info.get('shared').get('shared_team_ids'):
+                                                                shared.append(workspace.create_from_dict(
+                                                                    slack_connection.get_team_info(wksp)))
+                                                            conv_info['shared'] = shared
+                                                        channel = conversation.create_from_dict(conv_info)
 
-                                                    if _location_verification(channel, sig):
-                                                        if draft_user:
-                                                            draft_user.workspaces = []
-                                                            user_dict = draft_user
-                                                        else:
-                                                            user_dict = None
+                                                        if _location_verification(channel, sig):
+                                                            if draft_user:
+                                                                draft_user.workspaces = []
+                                                                user_dict = draft_user
+                                                            else:
+                                                                user_dict = None
 
-                                                        if team:
-                                                            team_dict = workspace.create_from_dict(team)
-                                                        else:
-                                                            team_dict = None
+                                                            if team:
+                                                                team_dict = workspace.create_from_dict(team)
+                                                            else:
+                                                                team_dict = None
 
-                                                        result_drafts.append({
-                                                            'timestamp': _convert_timestamp(draft.created),
-                                                            'match_string': r.search(esl.get('text')).group(0),
-                                                            'draft': draft,
-                                                            'user': user_dict,
-                                                            'workspace': team_dict,
-                                                            'conversation': channel
-                                                        })
+                                                            result_drafts.append({
+                                                                'timestamp': _convert_timestamp(draft.created),
+                                                                'match_string': r.search(esl.get('text')).group(0),
+                                                                'draft': draft,
+                                                                'user': user_dict,
+                                                                'workspace': team_dict,
+                                                                'conversation': channel
+                                                            })
             if result_drafts:
-                log.info(f'{len(result_drafts)} found containing {sig.meta.name} after filtering')
+                log.info(f'{len(result_drafts)} found containing {sig.name} after filtering')
                 for result in result_drafts:
                     results.append(result)
         if results:
@@ -1443,40 +1465,41 @@ def _mp_find_messages_worker(sig: signature.Signature,
     for query in sig.search_strings:
         message_list = [message for message in message_list if _message_block_search(message, query)]
         for message in message_list:
-            r = re.compile(sig.pattern)
-            workspace = next(
-                (item for item in workspaces_list if item.id == message.get('team')), None)
+            for pattern in sig.patterns:
+                r = re.compile(pattern)
+                workspace = next(
+                    (item for item in workspaces_list if item.id == message.get('team')), None)
 
-            match_string = _regex_search_message(message, r)
-            if match_string:
-                conv_info = slack_connection.get_conversation_info(message.get('conv_id'),
-                                                                   message.get('conv_team'))[0]
+                match_string = _regex_search_message(message, r)
+                if match_string:
+                    conv_info = slack_connection.get_conversation_info(message.get('conv_id'),
+                                                                       message.get('conv_team'))[0]
 
-                shared = []
-                if conv_info.get('shared').get('shared_team_ids'):
-                    for wrk_id in conv_info.get('shared').get('shared_team_ids'):
-                        shared.append(slack_connection.get_team_info(wrk_id))
-                conv_info['shared'] = shared
-                conv_info = conversation.create_from_dict(conv_info)
-                message['conversation'] = conv_info
-                message = post.create_message_from_dict(message)
-                post_user = next(
-                    (item for item in users_list if item.id == message.user), None)
-                post_user.workspaces = []
+                    shared = []
+                    if conv_info.get('shared').get('shared_team_ids'):
+                        for wrk_id in conv_info.get('shared').get('shared_team_ids'):
+                            shared.append(slack_connection.get_team_info(wrk_id))
+                    conv_info['shared'] = shared
+                    conv_info = conversation.create_from_dict(conv_info)
+                    message['conversation'] = conv_info
+                    message = post.create_message_from_dict(message)
+                    post_user = next(
+                        (item for item in users_list if item.id == message.user), None)
+                    post_user.workspaces = []
 
-                if workspace:
-                    url = f'https://{workspace.domain}.slack.com/archives/{message.conversation.id}' \
-                          f'/p{message.timestamp}'
-                else:
-                    url = None
-                if _location_verification(message.conversation, sig):
-                    results.append({
-                        'match_string': match_string,
-                        'message': message,
-                        'url': url,
-                        'user': post_user,
-                        'workspace': workspace
-                    })
+                    if workspace:
+                        url = f'https://{workspace.domain}.slack.com/archives/{message.conversation.id}' \
+                              f'/p{message.timestamp}'
+                    else:
+                        url = None
+                    if _location_verification(message.conversation, sig):
+                        results.append({
+                            'match_string': match_string,
+                            'message': message,
+                            'url': url,
+                            'user': post_user,
+                            'workspace': workspace
+                        })
 
     return results
 

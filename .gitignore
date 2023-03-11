@@ -127,3 +127,4 @@ dmypy.json
 # App specific
 *.csv
 logging_test.py
+signatures/
