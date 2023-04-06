@@ -9,7 +9,7 @@ __all__ = [
 ]
 
 __title__ = 'GitLab Watchman'
-__version__ = '1.1.0'
+__version__ = '2.0.0'
 __summary__ = 'Monitoring your Slack Enterprise Grid for sensitive information'
 __author__ = 'PaperMtn'
 __email__ = 'papermtn@protonmail.com'

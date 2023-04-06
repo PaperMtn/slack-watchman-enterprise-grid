@@ -8,13 +8,14 @@ import time
 import calendar
 from urllib3.util import Retry
 from requests.adapters import HTTPAdapter
+# from loguru import logger
 
-from . import logger
 from .models import workspace, signature
 from .models import user
 from .models import enterprise
 from .models import conversation
 from .models import post
+from . import sw_logger
 
 # Default timeframe of 1 hour
 DEFAULT_TIMEFRAME = calendar.timegm(time.gmtime()) - 3600
@@ -29,21 +30,6 @@ class SlackAPIError(Exception):
     pass
 
 
-# class TimeoutHTTPAdapter(HTTPAdapter):
-#     def __init__(self, *args, **kwargs):
-#         self.timeout = DEFAULT_TIMEOUT
-#         if 'timeout' in kwargs:
-#             self.timeout = kwargs['timeout']
-#             del kwargs['timeout']
-#         super().__init__(*args, **kwargs)
-#
-#     def send(self, request, **kwargs):
-#         timeout = kwargs.get('timeout')
-#         if timeout is None:
-#             kwargs['timeout'] = self.timeout
-#         return super().send(request, **kwargs)
-
-
 class SlackAPI(object):
 
     def __init__(self, token):
@@ -53,10 +39,7 @@ class SlackAPI(object):
         self.session = session = requests.session()
         session.mount(
             self.base_url,
-            HTTPAdapter(
-                # pool_connections=10,
-                # pool_maxsize=10,
-                max_retries=Retry(total=5, backoff_factor=0.2)))
+            HTTPAdapter(max_retries=Retry(total=5, backoff_factor=0.2)))
         session.headers.update({
             'Connection': 'keep-alive, close',
             'Authorization': f'Bearer {self.token}',
@@ -976,7 +959,7 @@ def search_message_matches(sig: signature.Signature,
                            message_list: [post.Message],
                            workspaces_list: [workspace.Workspace],
                            cores: int,
-                           log: logger.StdoutLogger) -> [dict]:
+                           logger: sw_logger.JSONLogger) -> [dict]:
     """ Use the search API to find messages posted in a certain timeframe
     matching search terms in the signature file. These are then compared against a regex
     to assess whether they contain sensitive data matching the signature.
@@ -988,7 +971,6 @@ def search_message_matches(sig: signature.Signature,
         users_list: List of User objects
         workspaces_list: List of Workspace objects
         cores: number of cores to use
-        log: Logging object for output
     Returns:
         List of Message objects containing post data
     """
@@ -1019,19 +1001,19 @@ def search_message_matches(sig: signature.Signature,
 
         if results:
             results = _deduplicate(results)
-            log.log_info(f'{len(results)} total matches found after filtering')
+            logger.log('INFO', f'{len(results)} total matches found after filtering')
             return results
         else:
-            log.log_info('No matches found after filtering')
+            logger.log('INFO', 'No matches found after filtering')
     except Exception as e:
-        log.log_critical(e)
+        logger.log('CRITICAL', e)
 
 
 def search_file_matches(sig: signature.Signature,
                         users_list: [user.User],
                         files_list: [post.File],
                         cores: int,
-                        log: logger.StdoutLogger) -> [dict]:
+                        logger: sw_logger.JSONLogger) -> [dict]:
     """ Use the search API to find files posted in a certain timeframe
     matching search terms in the signature file.
 
@@ -1040,7 +1022,6 @@ def search_file_matches(sig: signature.Signature,
         sig: Signature object defining what to search for
         users_list: List of User objects
         cores: Number of cores to use
-        log: Logging object for output
     Returns:
         List of Message objects containing post data
     """
@@ -1069,30 +1050,30 @@ def search_file_matches(sig: signature.Signature,
 
         if results:
             results = _deduplicate(results)
-            log.log_info(f'{len(results)} total matches found after filtering')
+            logger.log('INFO', f'{len(results)} total matches found after filtering')
             return results
         else:
-            log.log_info('No matches found after filtering')
+            logger.log('INFO', 'No matches found after filtering')
     except Exception as e:
-        log.log_critical(e)
+        logger.log('CRITICAL', e)
 
 
 def search_draft_matches(slack_connection: SlackAPI,
                          sig: signature.Signature,
                          drafts_list: [post.Draft],
                          users_list: [user.User],
-                         log: logger.StdoutLogger,
+                         logger: sw_logger.JSONLogger,
                          timeframe: int = DEFAULT_TIMEFRAME) -> [dict]:
     """ Find drafts posted in a certain timeframe
     matching search terms in the signature file. These are then compared against a regex
     to assess whether they contain sensitive data matching the signature.
 
     Args:
+        logger: Logging object
         slack_connection: Slack API object
         sig: Signature object defining what to search for
         users_list: List of User objects
         drafts_list: List of Draft objects
-        log: Logging object for output
         timeframe: How far back to search for drafts
     Returns:
         List of Drafts objects containing post data
@@ -1123,52 +1104,35 @@ def search_draft_matches(slack_connection: SlackAPI,
                                                                            item.id == draft.user), None)
                                                         team_id = draft.team
                                                         team = slack_connection.get_team_info(team_id)
-                                                        channel_id = draft.destinations[0]
-                                                        if channel_id.startswith('D'):
-                                                            team_id = get_enterprise(slack_connection).id
+                                                        if draft_user:
+                                                            draft_user.workspaces = []
+                                                            user_dict = draft_user
+                                                        else:
+                                                            user_dict = None
 
-                                                        conv_info = slack_connection.get_conversation_info(
-                                                            channel_id, team_id)[0]
-                                                        shared = []
-                                                        if conv_info.get('shared').get('shared_team_ids'):
-                                                            for wksp in conv_info.get('shared').get('shared_team_ids'):
-                                                                shared.append(workspace.create_from_dict(
-                                                                    slack_connection.get_team_info(wksp)))
-                                                            conv_info['shared'] = shared
-                                                        channel = conversation.create_from_dict(conv_info)
+                                                        if team:
+                                                            team_dict = workspace.create_from_dict(team)
+                                                        else:
+                                                            team_dict = None
 
-                                                        if _location_verification(channel, sig):
-                                                            if draft_user:
-                                                                draft_user.workspaces = []
-                                                                user_dict = draft_user
-                                                            else:
-                                                                user_dict = None
-
-                                                            if team:
-                                                                team_dict = workspace.create_from_dict(team)
-                                                            else:
-                                                                team_dict = None
-
-                                                            result_drafts.append({
-                                                                'timestamp': _convert_timestamp(draft.created),
-                                                                'match_string': r.search(esl.get('text')).group(0),
-                                                                'draft': draft,
-                                                                'user': user_dict,
-                                                                'workspace': team_dict,
-                                                                'conversation': channel
-                                                            })
+                                                        result_drafts.append({
+                                                            'timestamp': _convert_timestamp(draft.created),
+                                                            'match_string': r.search(esl.get('text')).group(0),
+                                                            'draft': draft,
+                                                            'user': user_dict,
+                                                            'workspace': team_dict,
+                                                        })
             if result_drafts:
-                log.info(f'{len(result_drafts)} found containing {sig.name} after filtering')
                 for result in result_drafts:
                     results.append(result)
         if results:
             results = _deduplicate(results)
-            log.log_info(f'{len(results)} total matches found after filtering')
+            logger.log('INFO', f'{len(results)} total matches found after filtering')
             return results
         else:
-            log.log_info('No matches found after filtering')
+            logger.log('INFO', 'No matches found after filtering')
     except Exception as e:
-        log.log_critical(e)
+        logger.log('CRITICAL', e)
 
 
 def find_shared_channels(slack_connection: SlackAPI) -> [conversation.Conversation]:
