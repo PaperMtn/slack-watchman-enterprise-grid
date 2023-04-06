@@ -848,27 +848,30 @@ def get_enterprise(slack_connection: SlackAPI) -> enterprise.Enterprise:
     return enterprise.create_from_dict(slack_connection.get_team_info(enterprise_info.get('id')))
 
 
-def get_workspaces(slack_connection: SlackAPI) -> [workspace.Workspace]:
+def get_workspaces(slack_connection: SlackAPI, verbose: bool) -> [workspace.Workspace]:
     """ Get all workspaces in the Slack environment
 
     Args:
         slack_connection: Slack API connection object
+        verbose: Whether to use verbose logging or not
     Returns:
         List containing Workspace objects for all Slack Workspaces
     """
 
     enterprise_info = slack_connection.get_enterprise_info()
 
-    return [workspace.create_from_dict(wrk) for wrk in enterprise_info.get('teams')]
+    return [workspace.create_from_dict(wrk, verbose) for wrk in enterprise_info.get('teams')]
 
 
 def get_users(slack_connection: SlackAPI,
-              workspaces_list: [workspace.Workspace]) -> [user.User]:
+              workspaces_list: [workspace.Workspace],
+              verbose: bool) -> [user.User]:
     """ Find all users in the Enterprise
 
     Args:
         workspaces_list: List of Slack Workspaces
         slack_connection: Slack API object
+        verbose: Whether to use verbose logging or not
     Returns:
         List of Slack User objects for all users in the enterprise
     """
@@ -882,12 +885,13 @@ def get_users(slack_connection: SlackAPI,
             workspace = next((item for item in workspaces_list if item.id == w.id))
             wk.append(workspace)
 
-        results.append(user.create_from_dict(user_info, workspaces_list))
+        results.append(user.create_from_dict(user_info, workspaces_list, verbose))
 
     return results
 
 
 def get_conversations(slack_connection: SlackAPI,
+                      verbose: bool,
                       timeframe: int = DEFAULT_TIMEFRAME) -> [conversation.Conversation]:
     """ Gets all conversations created in a given timeframe, returns a list of
     Conversation objects
@@ -895,6 +899,7 @@ def get_conversations(slack_connection: SlackAPI,
     Args:
         timeframe: timeframe to search in
         slack_connection: Slack API object
+        verbose: Whether to use verbose logging or not
     Returns:
         List of Conversation objects that have been created in the given timeframe
     """
@@ -907,9 +912,9 @@ def get_conversations(slack_connection: SlackAPI,
             conv_info = slack_connection.get_conversation_info(conv.get('id'))[0]
             if conv_info.get('shared'):
                 for wrk in conv.get('shared').get('shared_team_ids'):
-                    shared.append(workspace.create_from_dict(slack_connection.get_team_info(wrk)))
+                    shared.append(workspace.create_from_dict(slack_connection.get_team_info(wrk), verbose))
             conv_info['shared'] = shared
-            results.append(conversation.create_from_dict(conv_info))
+            results.append(conversation.create_from_dict(conv_info, verbose))
 
     return results
 
@@ -959,7 +964,8 @@ def search_message_matches(sig: signature.Signature,
                            message_list: [post.Message],
                            workspaces_list: [workspace.Workspace],
                            cores: int,
-                           logger: sw_logger.JSONLogger) -> [dict]:
+                           logger: sw_logger.JSONLogger,
+                           verbose: bool) -> [dict]:
     """ Use the search API to find messages posted in a certain timeframe
     matching search terms in the signature file. These are then compared against a regex
     to assess whether they contain sensitive data matching the signature.
@@ -971,6 +977,8 @@ def search_message_matches(sig: signature.Signature,
         users_list: List of User objects
         workspaces_list: List of Workspace objects
         cores: number of cores to use
+        logger: Logging object
+        verbose: Whether to use verbose logging or not
     Returns:
         List of Message objects containing post data
     """
@@ -990,7 +998,8 @@ def search_message_matches(sig: signature.Signature,
                     users_list,
                     message_list,
                     workspaces_list,
-                    results
+                    results,
+                    verbose
                 )
             )
             processes.append(p)
@@ -1063,6 +1072,7 @@ def search_draft_matches(slack_connection: SlackAPI,
                          drafts_list: [post.Draft],
                          users_list: [user.User],
                          logger: sw_logger.JSONLogger,
+                         verbose: bool,
                          timeframe: int = DEFAULT_TIMEFRAME) -> [dict]:
     """ Find drafts posted in a certain timeframe
     matching search terms in the signature file. These are then compared against a regex
@@ -1075,6 +1085,7 @@ def search_draft_matches(slack_connection: SlackAPI,
         users_list: List of User objects
         drafts_list: List of Draft objects
         timeframe: How far back to search for drafts
+        verbose: Whether to use verbose logging or not
     Returns:
         List of Drafts objects containing post data
     """
@@ -1105,13 +1116,12 @@ def search_draft_matches(slack_connection: SlackAPI,
                                                         team_id = draft.team
                                                         team = slack_connection.get_team_info(team_id)
                                                         if draft_user:
-                                                            draft_user.workspaces = []
                                                             user_dict = draft_user
                                                         else:
                                                             user_dict = None
 
                                                         if team:
-                                                            team_dict = workspace.create_from_dict(team)
+                                                            team_dict = workspace.create_from_dict(team, verbose)
                                                         else:
                                                             team_dict = None
 
@@ -1135,12 +1145,13 @@ def search_draft_matches(slack_connection: SlackAPI,
         logger.log('CRITICAL', e)
 
 
-def find_shared_channels(slack_connection: SlackAPI) -> [conversation.Conversation]:
+def find_shared_channels(slack_connection: SlackAPI, verbose: bool) -> [conversation.Conversation]:
     """ Find all shared channels. These could be either shared between
     Workspaces in an Enterprise Grid, or Slack Connect external channels.
 
     Args:
         slack_connection: Slack API object
+        verbose: Whether to use verbose logging or not
     Returns:
         List containing information on all external shared channels
     """
@@ -1157,9 +1168,9 @@ def find_shared_channels(slack_connection: SlackAPI) -> [conversation.Conversati
             if team_info.get('id').startswith('E'):
                 connected_teams.append(enterprise.create_from_dict(team_info))
             else:
-                connected_teams.append(workspace.create_from_dict(team_info))
+                connected_teams.append(workspace.create_from_dict(team_info, verbose))
 
-        results.append(conversation.create_from_dict(conversation_info))
+        results.append(conversation.create_from_dict(conversation_info, verbose))
 
     return results
 
@@ -1203,6 +1214,7 @@ def get_all_messages(slack_connection: SlackAPI,
 
 def get_all_files(slack_connection: SlackAPI,
                   cores: int,
+                  verbose: bool,
                   timeframe: int = DEFAULT_TIMEFRAME) -> [post.File]:
     """ Get all files in the Enterprise for a given timeframe
 
@@ -1210,6 +1222,7 @@ def get_all_files(slack_connection: SlackAPI,
         timeframe: timeframe to search in
         slack_connection: Slack API object
         cores: Number of cores to use
+        verbose: Whether to use verbose logging or not
     Returns:
         list of File objects containing all drafts
     """
@@ -1225,7 +1238,8 @@ def get_all_files(slack_connection: SlackAPI,
             args=(
                 file_list,
                 slack_connection,
-                results
+                results,
+                verbose
             )
         )
         processes.append(p)
@@ -1240,6 +1254,7 @@ def get_all_files(slack_connection: SlackAPI,
 def get_all_drafts(slack_connection: SlackAPI,
                    workspaces_list: [workspace.Workspace],
                    cores: int,
+                   verbose: bool,
                    timeframe: int = DEFAULT_TIMEFRAME) -> [post.Draft]:
     """ Get all drafts in the Enterprise for a given timeframe
 
@@ -1248,6 +1263,7 @@ def get_all_drafts(slack_connection: SlackAPI,
         slack_connection: Slack API object
         workspaces_list: List of all workspaces in the Enterprise
         cores: Number of cores to use
+        verbose: Whether to use verbose logging or not
     Returns:
         list of Draft objects containing all drafts
     """
@@ -1263,7 +1279,8 @@ def get_all_drafts(slack_connection: SlackAPI,
                 workspace,
                 slack_connection,
                 timeframe,
-                results
+                results,
+                verbose
             )
         )
         processes.append(p)
@@ -1329,7 +1346,8 @@ def _regex_search_message(message: dict, regex: re.Pattern) -> str:
 def _mp_draft_search_worker(workspaces_list: [workspace.Workspace],
                             slack_connection: SlackAPI,
                             timeframe: int,
-                            results: list):
+                            results: list,
+                            verbose: bool):
     """ MULTIPROCESSING WORKER - Iterates through a workspace and returns all draft
     messages.
 
@@ -1338,6 +1356,7 @@ def _mp_draft_search_worker(workspaces_list: [workspace.Workspace],
         slack_connection: Slack API connection
         timeframe: Furthest back time to get messages from
         results: MP results list to pass back to calling function
+        verbose: Whether to use verbose logging or not
     Returns:
         List of draft objects
     """
@@ -1346,7 +1365,7 @@ def _mp_draft_search_worker(workspaces_list: [workspace.Workspace],
         workspace_drafts = slack_connection.list_drafts(workspace.id, oldest=timeframe)
         for draft_info in workspace_drafts:
             if draft_info.get('date_created') >= timeframe:
-                results.append(post.create_draft_from_dict(draft_info))
+                results.append(post.create_draft_from_dict(draft_info, verbose))
 
     return results
 
@@ -1379,7 +1398,8 @@ def _mp_message_search_worker(conv_list: list,
 
 def _mp_file_search_worker(file_list: list,
                            slack_connection: SlackAPI,
-                           results: list) -> list:
+                           results: list,
+                           verbose: bool) -> list:
     """ MULTIPROCESSING WORKER - Iterates through a list of conversation IDs
     and gets recent messages for each
 
@@ -1387,6 +1407,7 @@ def _mp_file_search_worker(file_list: list,
         file_list: List of file information in dict format from the discovery.files.list endpoint
         slack_connection: Slack API object
         results: MP results list to pass back to calling function
+        verbose: Whether to use verbose logging or not
     Returns:
         List of File objects
     """
@@ -1401,7 +1422,7 @@ def _mp_file_search_worker(file_list: list,
                 else:
                     team_id = share.get('team')
                 conv = slack_connection.get_conversation_info(share.get('channel'), team_id)[0]
-                shares.append(conversation.create_from_dict(conv))
+                shares.append(conversation.create_from_dict(conv, verbose))
             file_info['shares'] = shares
             results.append(post.create_file_from_dict(file_info))
 
@@ -1413,7 +1434,8 @@ def _mp_find_messages_worker(sig: signature.Signature,
                              users_list: [user.User],
                              message_list: [dict],
                              workspaces_list: [workspace.Workspace],
-                             results):
+                             results,
+                             verbose: bool):
     """ MULTIPROCESSING WORKER - Iterates through lists of messages to find matches against a signature
 
     Args:
@@ -1422,6 +1444,7 @@ def _mp_find_messages_worker(sig: signature.Signature,
         message_list: List of Message objects
         workspaces_list: List of Workspaces objects from the Enterprise
         results: MP results list to pass back to calling function
+        verbose: Whether to use verbose logging or not
     Returns:
         List of Message objects that match the signature
     """
@@ -1444,12 +1467,11 @@ def _mp_find_messages_worker(sig: signature.Signature,
                         for wrk_id in conv_info.get('shared').get('shared_team_ids'):
                             shared.append(slack_connection.get_team_info(wrk_id))
                     conv_info['shared'] = shared
-                    conv_info = conversation.create_from_dict(conv_info)
+                    conv_info = conversation.create_from_dict(conv_info, verbose)
                     message['conversation'] = conv_info
                     message = post.create_message_from_dict(message)
                     post_user = next(
                         (item for item in users_list if item.id == message.user), None)
-                    post_user.workspaces = []
 
                     if workspace:
                         url = f'https://{workspace.domain}.slack.com/archives/{message.conversation.id}' \
@@ -1494,7 +1516,6 @@ def _mp_find_files_worker(sig: signature.Signature,
                             if _location_verification(conv, sig):
                                 file_user = next((item for item in users_list if item.id == target_file.user),
                                                  None)
-                                file_user.workspaces = []
                                 results_dict = {
                                     'file': target_file,
                                     'conversation': conv,
@@ -1508,7 +1529,6 @@ def _mp_find_files_worker(sig: signature.Signature,
                         if _location_verification(conv, sig):
                             file_user = next((item for item in users_list if item.id == target_file.user),
                                              None)
-                            file_user.workspaces = []
                             results_dict = {
                                 'file': target_file,
                                 'conversation': conv,

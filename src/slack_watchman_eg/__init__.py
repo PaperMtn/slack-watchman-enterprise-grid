@@ -43,7 +43,8 @@ def search(sig: signature,
            workspace_list: list,
            files_list: list,
            scope: str,
-           cores: int):
+           cores: int,
+           verbose: bool):
     """ Uses the signature to call the relevant search functions to find data in messages
     files and drafts. Results are output to stdout logging.
     Args:
@@ -55,6 +56,7 @@ def search(sig: signature,
         files_list: List of File objects to search through
         scope: Scope of any results found for logging: e.g. Draft
         cores: Number of CPU cores to use
+        verbose: Whether to use verbose logging or not
     """
 
     if scope == 'messages':
@@ -66,7 +68,8 @@ def search(sig: signature,
             message_list,
             workspace_list,
             cores,
-            OUTPUT_LOGGER
+            OUTPUT_LOGGER,
+            verbose
         )
         if messages:
             for message in messages:
@@ -126,7 +129,7 @@ def init_logger(logging_type: str, debug: bool) -> sw_logger.JSONLogger or sw_lo
     if not logging_type or logging_type == 'terminal':
         return sw_logger.StdoutLogger(debug=debug)
     else:
-        return sw_logger.JSONLogger()
+        return sw_logger.JSONLogger(debug=debug)
 
 
 def main():
@@ -147,9 +150,11 @@ def main():
                             help='Number of cores to use between 1-12', required=False)
         parser.add_argument('--version', '-v', action='version',
                             version=f'Slack Watchman for Enterprise Grid: {__version__.__version__}')
-        parser.add_argument('--users', '-u', dest='users', action='store_true', help='Find all users')
-        parser.add_argument('--workspaces', '-w', dest='workspaces', action='store_true', help='Find all workspaces')
+        parser.add_argument('--users', '-u', dest='users', action='store_true', help='Return all users')
+        parser.add_argument('--workspaces', '-w', dest='workspaces', action='store_true', help='Return all workspaces')
         parser.add_argument('--debug', '-d', dest='debug', action='store_true', help='Turn on debug level logging')
+        parser.add_argument('--verbose', '-V', dest='verbose', action='store_true', help='Turn on more verbose'
+                                                                                         'output for JSON logging')
 
         args = parser.parse_args()
         hours = args.hours
@@ -159,6 +164,7 @@ def main():
         workspaces = args.workspaces
         logging_type = args.logging_type
         debug = args.debug
+        verbose = args.verbose
 
         span = 0
         OUTPUT_LOGGER = init_logger(logging_type, debug)
@@ -202,10 +208,10 @@ def main():
         OUTPUT_LOGGER.log('INFO', 'Enumerating Enterprise information')
         OUTPUT_LOGGER.log('NOTIFY', slack_wrapper.get_enterprise(slack_con), scope='Enterprise', notify_type='enterprise')
         OUTPUT_LOGGER.log('INFO', 'Enumerating Enterprise workspaces')
-        workspace_list = slack_wrapper.get_workspaces(slack_con)
+        workspace_list = slack_wrapper.get_workspaces(slack_con, verbose)
         OUTPUT_LOGGER.log('INFO', f'{len(workspace_list)} workspaces discovered')
         OUTPUT_LOGGER.log('INFO', 'Enumerating Enterprise users')
-        user_list = slack_wrapper.get_users(slack_con, workspace_list)
+        user_list = slack_wrapper.get_users(slack_con, workspace_list, verbose)
         OUTPUT_LOGGER.log('INFO', f'{len(user_list)} users discovered')
 
         if users:
@@ -219,7 +225,7 @@ def main():
                 OUTPUT_LOGGER.log('NOTIFY', workspace, detect_type='Workspace', notify_type='workspace')
 
         OUTPUT_LOGGER.log('INFO', 'Enumerating files')
-        file_list = slack_wrapper.get_all_files(slack_con, cores=cores, timeframe=tf)
+        file_list = slack_wrapper.get_all_files(slack_con, cores=cores, verbose=verbose, timeframe=tf)
         OUTPUT_LOGGER.log('INFO', f'{len(file_list)} files discovered')
 
         OUTPUT_LOGGER.log('INFO', 'Enumerating messages')
@@ -236,7 +242,8 @@ def main():
                     workspace_list,
                     file_list,
                     scope,
-                    cores
+                    cores,
+                    verbose
                 )
 
         OUTPUT_LOGGER.log('INFO', 'Enumerating draft messages')
@@ -244,6 +251,7 @@ def main():
             slack_con,
             workspace_list,
             cores=cores,
+            verbose=verbose,
             timeframe=tf
         )
         OUTPUT_LOGGER.log('INFO', f'{len(draft_list)} drafts discovered')
@@ -256,6 +264,7 @@ def main():
                     draft_list,
                     user_list,
                     OUTPUT_LOGGER,
+                    verbose,
                     tf
                 )
                 if drafts:

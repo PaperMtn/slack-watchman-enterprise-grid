@@ -202,7 +202,7 @@ class EnhancedJSONEncoder(json.JSONEncoder):
 
 
 class JSONLogger(Logger):
-    def __init__(self, name='Slack Watchman Enterprise'):
+    def __init__(self, name='Slack Watchman for Enterprise Grid', **kwargs):
         super().__init__(name)
         self.notify_format = logging.Formatter(
             '{"timestamp": "%(asctime)s", "level": "NOTIFY", "scope": "%(scope)s", "severity": '
@@ -212,9 +212,12 @@ class JSONLogger(Logger):
         self.success_format = logging.Formatter(
             '{"timestamp": "%(asctime)s", "level": "SUCCESS", "message": "%(message)s"}')
         self.logger = logging.getLogger(self.name)
-        self.logger.setLevel(logging.INFO)
         self.handler = logging.StreamHandler(sys.stdout)
         self.logger.addHandler(self.handler)
+        if kwargs.get('debug'):
+            self.logger.setLevel(logging.DEBUG)
+        else:
+            self.logger.setLevel(logging.INFO)
 
     def bind(self):
         pass
