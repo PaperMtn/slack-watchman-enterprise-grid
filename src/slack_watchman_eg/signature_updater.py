@@ -3,15 +3,19 @@ import os
 import zipfile
 import shutil
 import sys
+from datetime import datetime
 from pathlib import Path
 from urllib.request import urlopen
+
+from . import sw_logger
 
 SIGNATURE_URL = 'https://github.com/PaperMtn/watchman-signatures/archive/main.zip'
 
 
 class SignatureUpdater(object):
-    def __init__(self):
+    def __init__(self, logger: sw_logger.JSONLogger):
         self.application_path = str((Path(__file__).parents[2]).resolve())
+        self.logger = logger
 
     def update_signatures(self):
 
@@ -30,7 +34,7 @@ class SignatureUpdater(object):
                 if not os.path.exists(full_path):
                     os.makedirs(full_path)
         except Exception as e:
-            print('Error while creating the signature-base directories')
+            self.logger.log('CRITICAL', 'Error while creating the signature-base directories')
             sys.exit(1)
 
         try:
@@ -40,7 +44,7 @@ class SignatureUpdater(object):
                 if file_path.endswith('/'):
                     continue
 
-                # print('DEBUG', 'Upgrade', f'Extracting {file_path} ...')
+                self.logger.log('DEBUG', f'Extracting {file_path} ...')
                 if '/competitive/' in file_path and file_path.endswith('.yaml'):
                     target_file = os.path.join(sig_dir, 'competitive', signature_name)
                 elif '/compliance/' in file_path and file_path.endswith('.yaml'):
@@ -54,16 +58,34 @@ class SignatureUpdater(object):
                 else:
                     continue
 
-                if not os.path.exists(target_file):
-                    print(f'New signature file: {signature_name}')
+                if os.path.exists(target_file):
+                    existing_modified_date = datetime.utcfromtimestamp(os.path.getmtime(target_file))
+                    if datetime(*signatures_zip_file.getinfo(file_path).date_time) > existing_modified_date:
+                        self.logger.log('SUCCESS', f'Signature updated to newest version: {signature_name}')
+                        source = signatures_zip_file.open(file_path)
+                        target = open(target_file, 'wb')
+                        with source, target:
+                            shutil.copyfileobj(source, target)
+                        target.close()
+                        source.close()
+                else:
+                    self.logger.log('SUCCESS', f'New signature file: {signature_name}')
+                    source = signatures_zip_file.open(file_path)
+                    target = open(target_file, 'wb')
+                    with source, target:
+                        shutil.copyfileobj(source, target)
+                    target.close()
+                    source.close()
 
-                source = signatures_zip_file.open(file_path)
-                target = open(target_file, 'wb')
-                with source, target:
-                    shutil.copyfileobj(source, target)
-                target.close()
-                source.close()
+                # if datetime(*signatures_zip_file.getinfo(file_path).date_time) > existing_modified_date:
+                #     print('weeee')
+                #     source = signatures_zip_file.open(file_path)
+                #     target = open(target_file, 'wb')
+                #     with source, target:
+                #         shutil.copyfileobj(source, target)
+                #     target.close()
+                #     source.close()
 
         except Exception as e:
-            print('Error while extracting the signature files from the download package')
+            self.logger.log('CRITICAL', f'Error while extracting the signature files from the download package {e}')
             sys.exit(1)
