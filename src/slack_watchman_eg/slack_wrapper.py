@@ -8,14 +8,17 @@ import time
 import calendar
 from urllib3.util import Retry
 from requests.adapters import HTTPAdapter
-# from loguru import logger
+from typing import List, Dict
 
-from .models import workspace, signature
-from .models import user
-from .models import enterprise
-from .models import conversation
-from .models import post
 from . import sw_logger
+from .models import (
+    signature,
+    user,
+    workspace,
+    post,
+    conversation,
+    enterprise
+)
 
 # Default timeframe of 1 hour
 DEFAULT_TIMEFRAME = calendar.timegm(time.gmtime()) - 3600
@@ -32,7 +35,7 @@ class SlackAPIError(Exception):
 
 class SlackAPI(object):
 
-    def __init__(self, token):
+    def __init__(self, token: str):
         self.token = token
         self.base_url = 'https://slack.com/api'
         self.limit = '1000'
@@ -53,9 +56,9 @@ class SlackAPI(object):
                          pagination: str,
                          method: str,
                          relative_url: str,
-                         params: dict,
-                         data: dict,
-                         verify_ssl: bool) -> list:
+                         params: Dict,
+                         data: Dict,
+                         verify_ssl: bool) -> List:
 
         results = []
 
@@ -95,12 +98,12 @@ class SlackAPI(object):
         return results
 
     def _make_request(self,
-                      url,
-                      params=None,
-                      data=None,
-                      method='GET',
-                      verify_ssl=True,
-                      pagination=None):
+                      url: str,
+                      params: Dict = None,
+                      data: Dict = None,
+                      method: str = 'GET',
+                      verify_ssl: bool = True,
+                      pagination: str = None) -> List:
         try:
             relative_url = '/'.join((self.base_url, url))
             response = self.session.request(
@@ -166,7 +169,7 @@ class SlackAPI(object):
         except Exception as e:
             raise Exception(e)
 
-    def get_enterprise_info(self) -> dict:
+    def get_enterprise_info(self) -> Dict:
         """ Return all information for the Enterprise Grid
 
         Returns:
@@ -175,7 +178,7 @@ class SlackAPI(object):
 
         return self._make_request('discovery.enterprise.info')[0].get('enterprise')
 
-    def get_all_users(self, offset: str = None) -> [dict]:
+    def get_all_users(self, offset: str = None) -> List[Dict]:
         """ Get all users in a Grid
 
         Returns:
@@ -190,7 +193,7 @@ class SlackAPI(object):
 
         return _format_results(users, 'users')
 
-    def get_user_info(self, user_id: str) -> dict:
+    def get_user_info(self, user_id: str) -> Dict:
         """ Get information from one user in the Grid
 
         Returns:
@@ -209,7 +212,7 @@ class SlackAPI(object):
                                private: bool = None,
                                im: bool = None,
                                mpim: bool = None,
-                               historical: bool = None) -> [dict]:
+                               historical: bool = None) -> List[Dict]:
         """ return all conversations a user is involved in
 
         Args:
@@ -243,7 +246,7 @@ class SlackAPI(object):
                               im: bool = None,
                               mpim: bool = None,
                               ext_shared: bool = None,
-                              historical: bool = None) -> [dict]:
+                              historical: bool = None) -> List[Dict]:
         """ return all conversations in a Grid
 
         Args:
@@ -271,7 +274,7 @@ class SlackAPI(object):
 
         return _format_results(conversations, 'channels')
 
-    def get_recent_conversations(self, latest: float = None) -> [dict]:
+    def get_recent_conversations(self, latest: float = None) -> List[Dict]:
         """
         Args:
             latest: Timestamp within the last 24 hours to shorten or lengthen the requested timespan.
@@ -293,7 +296,7 @@ class SlackAPI(object):
                                  channel_id: str,
                                  team_id: str = None,
                                  latest: float = None,
-                                 oldest: float = None) -> [dict]:
+                                 oldest: float = None) -> List[Dict]:
         """ Retrieves the history of the channel-object. This can be thought of as
          the state of the conversation in the client: it’s what the users are seeing.
 
@@ -321,7 +324,7 @@ class SlackAPI(object):
                                channel_id: str,
                                team_id: str,
                                latest: float = None,
-                               oldest: float = None) -> [dict]:
+                               oldest: float = None) -> List[Dict]:
         """ Returns edit and delete records of messages
 
         Args:
@@ -347,7 +350,7 @@ class SlackAPI(object):
 
     def get_conversation_info(self,
                               channel_id: str,
-                              team_id: str = None) -> [dict]:
+                              team_id: str = None) -> List[Dict]:
         """ Provides a comprehensive overview of a single channel outside of its message history
 
         Args:
@@ -367,7 +370,7 @@ class SlackAPI(object):
     def get_conversation_members(self,
                                  channel_id: str,
                                  team_id: str = None,
-                                 include_member_left: bool = None) -> [dict]:
+                                 include_member_left: bool = None) -> List[Dict]:
         """ Provides a list of everyone in a given channel, private channel, MDPM or DM
 
         Args:
@@ -391,7 +394,7 @@ class SlackAPI(object):
     def get_conversation_renames(self,
                                  latest: float = None,
                                  oldest: float = None,
-                                 private: bool = None) -> [dict]:
+                                 private: bool = None) -> List[Dict]:
         """ Get all channel renames that have occurred in an organisation
 
         Args:
@@ -417,7 +420,7 @@ class SlackAPI(object):
                              query: str,
                              include_messages: bool = None,
                              latest: float = None,
-                             oldest: float = None) -> [dict]:
+                             oldest: float = None) -> List[Dict]:
         """ Find channels and messages within an instance that contain the provided search term.
 
         Args:
@@ -568,7 +571,7 @@ class SlackAPI(object):
     def list_drafts(self,
                     team_id: str,
                     oldest: int = None,
-                    latest: int = None) -> [dict]:
+                    latest: int = None) -> List[Dict]:
         """
 
         Args:
@@ -619,7 +622,7 @@ class SlackAPI(object):
 
     def list_files(self,
                    oldest: int or str = None,
-                   latest: int or str = None) -> [dict]:
+                   latest: int or str = None) -> List[Dict]:
         """ Returns files uploaded within a specified timeframe.
 
         Args:
@@ -723,7 +726,7 @@ class SlackAPI(object):
         return self._make_request('team.info', params=params)[0].get('team')
 
 
-def _format_results(results_list: list, identifier: str) -> [dict]:
+def _format_results(results_list: list, identifier: str) -> List[Dict]:
     """ Format a JSON result from the Slack API. Results come in the format below:
     {
         "ok": true,
@@ -797,7 +800,7 @@ def _convert_timestamp(timestamp: str or int) -> str:
     return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(timestamp)))
 
 
-def _deduplicate(input_list: list) -> [dict]:
+def _deduplicate(input_list: list) -> List[Dict]:
     """ Removes duplicates where results are returned by multiple queries
     Nested class handles JSON encoding for dataclass objects
 
@@ -848,7 +851,7 @@ def get_enterprise(slack_connection: SlackAPI) -> enterprise.Enterprise:
     return enterprise.create_from_dict(slack_connection.get_team_info(enterprise_info.get('id')))
 
 
-def get_workspaces(slack_connection: SlackAPI, verbose: bool) -> [workspace.Workspace]:
+def get_workspaces(slack_connection: SlackAPI, verbose: bool) -> List[workspace.Workspace]:
     """ Get all workspaces in the Slack environment
 
     Args:
@@ -864,8 +867,8 @@ def get_workspaces(slack_connection: SlackAPI, verbose: bool) -> [workspace.Work
 
 
 def get_users(slack_connection: SlackAPI,
-              workspaces_list: [workspace.Workspace],
-              verbose: bool) -> [user.User]:
+              workspaces_list: List[workspace.Workspace],
+              verbose: bool) -> List[user.User]:
     """ Find all users in the Enterprise
 
     Args:
@@ -892,7 +895,7 @@ def get_users(slack_connection: SlackAPI,
 
 def get_conversations(slack_connection: SlackAPI,
                       verbose: bool,
-                      timeframe: int = DEFAULT_TIMEFRAME) -> [conversation.Conversation]:
+                      timeframe: int = DEFAULT_TIMEFRAME) -> List[conversation.Conversation]:
     """ Gets all conversations created in a given timeframe, returns a list of
     Conversation objects
 
@@ -960,12 +963,12 @@ def tombstone_message(slack_connection: SlackAPI,
 
 def search_message_matches(sig: signature.Signature,
                            slack_connection: SlackAPI,
-                           users_list: [user.User],
-                           message_list: [post.Message],
-                           workspaces_list: [workspace.Workspace],
+                           users_list: List[user.User],
+                           message_list: List[post.Message],
+                           workspaces_list: List[workspace.Workspace],
                            cores: int,
                            logger: sw_logger.JSONLogger,
-                           verbose: bool) -> [dict]:
+                           verbose: bool) -> List[Dict]:
     """ Use the search API to find messages posted in a certain timeframe
     matching search terms in the signature file. These are then compared against a regex
     to assess whether they contain sensitive data matching the signature.
@@ -1019,10 +1022,10 @@ def search_message_matches(sig: signature.Signature,
 
 
 def search_file_matches(sig: signature.Signature,
-                        users_list: [user.User],
-                        files_list: [post.File],
+                        users_list: List[user.User],
+                        files_list: List[post.File],
                         cores: int,
-                        logger: sw_logger.JSONLogger) -> [dict]:
+                        logger: sw_logger.JSONLogger) -> List[Dict]:
     """ Use the search API to find files posted in a certain timeframe
     matching search terms in the signature file.
 
@@ -1069,11 +1072,11 @@ def search_file_matches(sig: signature.Signature,
 
 def search_draft_matches(slack_connection: SlackAPI,
                          sig: signature.Signature,
-                         drafts_list: [post.Draft],
-                         users_list: [user.User],
+                         drafts_list: List[post.Draft],
+                         users_list: List[user.User],
                          logger: sw_logger.JSONLogger,
                          verbose: bool,
-                         timeframe: int = DEFAULT_TIMEFRAME) -> [dict]:
+                         timeframe: int = DEFAULT_TIMEFRAME) -> List[Dict]:
     """ Find drafts posted in a certain timeframe
     matching search terms in the signature file. These are then compared against a regex
     to assess whether they contain sensitive data matching the signature.
@@ -1145,7 +1148,7 @@ def search_draft_matches(slack_connection: SlackAPI,
         logger.log('CRITICAL', e)
 
 
-def find_shared_channels(slack_connection: SlackAPI, verbose: bool) -> [conversation.Conversation]:
+def find_shared_channels(slack_connection: SlackAPI, verbose: bool) -> List[conversation.Conversation]:
     """ Find all shared channels. These could be either shared between
     Workspaces in an Enterprise Grid, or Slack Connect external channels.
 
@@ -1177,7 +1180,7 @@ def find_shared_channels(slack_connection: SlackAPI, verbose: bool) -> [conversa
 
 def get_all_messages(slack_connection: SlackAPI,
                      cores: int,
-                     timeframe: int = DEFAULT_TIMEFRAME) -> [post.Message]:
+                     timeframe: int = DEFAULT_TIMEFRAME) -> List[post.Message]:
     """ Get all messages in the Enterprise for a given timeframe
 
     Args:
@@ -1215,7 +1218,7 @@ def get_all_messages(slack_connection: SlackAPI,
 def get_all_files(slack_connection: SlackAPI,
                   cores: int,
                   verbose: bool,
-                  timeframe: int = DEFAULT_TIMEFRAME) -> [post.File]:
+                  timeframe: int = DEFAULT_TIMEFRAME) -> List[post.File]:
     """ Get all files in the Enterprise for a given timeframe
 
     Args:
@@ -1252,10 +1255,10 @@ def get_all_files(slack_connection: SlackAPI,
 
 
 def get_all_drafts(slack_connection: SlackAPI,
-                   workspaces_list: [workspace.Workspace],
+                   workspaces_list: List[workspace.Workspace],
                    cores: int,
                    verbose: bool,
-                   timeframe: int = DEFAULT_TIMEFRAME) -> [post.Draft]:
+                   timeframe: int = DEFAULT_TIMEFRAME) -> List[post.Draft]:
     """ Get all drafts in the Enterprise for a given timeframe
 
     Args:
@@ -1343,7 +1346,7 @@ def _regex_search_message(message: dict, regex: re.Pattern) -> str:
 
 
 # Multiprocessing Worker Functions
-def _mp_draft_search_worker(workspaces_list: [workspace.Workspace],
+def _mp_draft_search_worker(workspaces_list: List[workspace.Workspace],
                             slack_connection: SlackAPI,
                             timeframe: int,
                             results: list,
@@ -1431,9 +1434,9 @@ def _mp_file_search_worker(file_list: list,
 
 def _mp_find_messages_worker(sig: signature.Signature,
                              slack_connection: SlackAPI,
-                             users_list: [user.User],
-                             message_list: [dict],
-                             workspaces_list: [workspace.Workspace],
+                             users_list: List[user.User],
+                             message_list: List[Dict],
+                             workspaces_list: List[workspace.Workspace],
                              results,
                              verbose: bool):
     """ MULTIPROCESSING WORKER - Iterates through lists of messages to find matches against a signature
@@ -1491,8 +1494,8 @@ def _mp_find_messages_worker(sig: signature.Signature,
 
 
 def _mp_find_files_worker(sig: signature.Signature,
-                          users_list: [user.User],
-                          file_list: [post.File],
+                          users_list: List[user.User],
+                          file_list: List[post.File],
                           results):
     """ MULTIPROCESSING WORKER - Iterates through lists of files to find matches against a signature
 

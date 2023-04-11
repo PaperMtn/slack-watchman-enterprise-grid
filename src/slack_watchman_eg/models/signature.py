@@ -1,6 +1,13 @@
 import pathlib
 import yaml
 from dataclasses import dataclass
+from typing import List
+
+
+@dataclass(slots=True)
+class TestCases:
+    match_cases: List[str]
+    fail_cases: List[str]
 
 
 @dataclass(slots=True)
@@ -16,22 +23,16 @@ class Signature:
     version: str
     description: str
     severity: int
-    watchman_apps: list
-    scope: list
-    file_types: list
-    locations: list
-    test_cases: dataclass
+    watchman_apps: List[str]
+    scope: List[str]
+    file_types: List[str]
+    locations: List[str]
+    test_cases: TestCases
     search_strings: str
-    patterns: list
+    patterns: List[str]
 
 
-@dataclass(slots=True)
-class TestCases:
-    match_cases: list
-    fail_cases: list
-
-
-def load_from_yaml(sig_path: pathlib.PosixPath) -> list[Signature]:
+def load_from_yaml(sig_path: pathlib.PosixPath) -> List[Signature]:
     """Load YAML file and return a Signature object
     Args:
         sig_path: Path of YAML file

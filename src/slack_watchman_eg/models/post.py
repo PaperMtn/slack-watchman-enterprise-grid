@@ -1,9 +1,12 @@
 import time
 from dataclasses import dataclass
+from typing import List, Dict
+
+from . import conversation
 
 
 def _convert_timestamp(timestamp: str or int) -> str or None:
-    """ Converts epoch timestamp into human readable time
+    """ Converts epoch timestamp into human-readable time
 
     Args:
         timestamp: epoch timestamp in seconds
@@ -50,29 +53,29 @@ class File(Post):
     public_url_shared: bool
     url_private: str
     url_private_download: str
-    shares: list
+    shares: List
 
 
 @dataclass(slots=True)
 class Message(Post):
     text: str
     type: str
-    blocks: list
+    blocks: List[Dict]
     timestamp: int or float or str
-    conversation: dataclass
+    conversation: conversation.Conversation or conversation.ConversationSuccinct
 
 
 @dataclass(slots=True)
 class Draft(Post):
     last_updated_ts: str
     last_updated_client: str
-    blocks: list
-    file_ids: list
+    blocks: List[Dict]
+    file_ids: List[str]
     is_from_composer: bool
     is_deleted: bool
     is_sent: bool
-    destinations: list
-    attachments: list
+    destinations: List[Dict]
+    attachments: List[Dict]
     date_scheduled: int or float
 
 
@@ -80,12 +83,12 @@ class Draft(Post):
 class DraftSuccinct(Post):
     last_updated_ts: str
     last_updated_client: str
-    blocks: list
-    destinations: list
-    attachments: list
+    blocks: List[Dict]
+    destinations: List[Dict]
+    attachments: List[Dict]
 
 
-def create_draft_from_dict(draft_dict: dict, verbose: bool) -> Draft or DraftSuccinct:
+def create_draft_from_dict(draft_dict: Dict, verbose: bool) -> Draft or DraftSuccinct:
     """ Create a Draft post object from a dict containing JSON data from
     the Slack API
 
@@ -129,7 +132,7 @@ def create_draft_from_dict(draft_dict: dict, verbose: bool) -> Draft or DraftSuc
         )
 
 
-def create_message_from_dict(message_dict: dict) -> Message:
+def create_message_from_dict(message_dict: Dict) -> Message:
     """ Create a Message post object from a dict containing JSON data from
     the Slack API
 
@@ -153,7 +156,7 @@ def create_message_from_dict(message_dict: dict) -> Message:
     )
 
 
-def create_file_from_dict(file_dict: dict) -> File:
+def create_file_from_dict(file_dict: Dict) -> File:
     """ Create a File post object from a dict containing JSON data from
     the Slack API
 

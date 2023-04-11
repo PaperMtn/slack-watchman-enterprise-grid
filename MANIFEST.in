@@ -1,3 +1,0 @@
-include *.txt
-recursive-include signatures *.yaml *.yml
-recursive-exclude signatures test*.yaml test*.yml

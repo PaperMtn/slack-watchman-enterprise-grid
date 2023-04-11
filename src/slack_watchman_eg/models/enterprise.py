@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Dict
 
 
 @dataclass(slots=True)
@@ -17,7 +18,7 @@ class Enterprise(object):
     url: str
 
 
-def create_from_dict(enterprise_dict: dict) -> Enterprise:
+def create_from_dict(enterprise_dict: Dict) -> Enterprise:
     """ Create an Enterprise object from a dict response from the Slack API
 
     Args:

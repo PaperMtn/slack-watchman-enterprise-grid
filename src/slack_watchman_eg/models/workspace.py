@@ -1,10 +1,10 @@
 import time
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Dict
 
 
 def _convert_timestamp(timestamp: str or int) -> str or None:
-    """ Converts epoch timestamp into human readable time
+    """ Converts epoch timestamp into human-readable time
 
     Args:
         timestamp: epoch timestamp in seconds
@@ -58,7 +58,7 @@ class WorkspaceSuccinct(object):
     url: str
 
 
-def create_from_dict(workspace_dict: dict, verbose: bool) -> Workspace or WorkspaceSuccinct:
+def create_from_dict(workspace_dict: Dict, verbose: bool) -> Workspace or WorkspaceSuccinct:
     """ Return a Workspace object based off an input dictionary
 
     Args:

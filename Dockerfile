@@ -1,20 +1,13 @@
-FROM alpine/git AS initlayer
-WORKDIR /workdir
-RUN git clone -b develop https://github.com/PaperMtn/slack-watchman-enterprise-grid.git
+# syntax=docker/dockerfile:1
 
-FROM python:buster
-RUN addgroup --gid 1000 slack-watchman-enterprise-grid
-RUN useradd -u 1000 -g 1000 slack-watchman-enterprise-grid
-RUN mkdir /home/slack-watchman-enterprise-grid
-COPY --from=initlayer /workdir/slack-watchman-enterprise-grid /home/slack-watchman-enterprise-grid
-RUN chown -R slack-watchman-enterprise-grid: /home/slack-watchman-enterprise-grid
-WORKDIR /home/slack-watchman-enterprise-grid
-
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install requests build PyYAML numpy
-RUN python3 -m build
-RUN python3 -m pip install dist/*.whl
-
-USER slack-watchman-enterprise-grid
-
-ENTRYPOINT ["/usr/local/bin/slack-watchman-eg"]
+FROM python:3.10
+COPY . /opt/slack-watchman-enterprise-grid
+WORKDIR /opt/slack-watchman-enterprise-grid
+ENV PYTHONPATH=/opt/slack-watchman-enterprise-grid SLACK_WATCHMAN_EG_TOKEN=""
+RUN pip3 install -r requirements.txt build && \
+    chmod -R 700 . && \
+    python3 -m build && \
+    python3 -m pip install dist/*.whl
+STOPSIGNAL SIGINT
+WORKDIR /opt/slack-watchman-enterprise-grid
+ENTRYPOINT ["slack-watchman-eg"]

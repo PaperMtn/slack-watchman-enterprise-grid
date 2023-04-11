@@ -1,11 +1,12 @@
 import time
 from dataclasses import dataclass
+from typing import Dict, List
 
 from . import workspace
 
 
 def _convert_timestamp(timestamp: str or int) -> str or None:
-    """ Converts epoch timestamp into human readable time
+    """ Converts epoch timestamp into human-readable time
 
     Args:
         timestamp: epoch timestamp in seconds
@@ -38,7 +39,7 @@ class User(object):
     phone: str
     skype: str
     display_name: str
-    fields: dict
+    fields: Dict
     api_app_id: str
     always_active: bool
     bot_id: str
@@ -57,7 +58,7 @@ class User(object):
     is_email_confirmed: bool
     who_can_share_contact_card: str
     is_workflow_bot: bool
-    workspaces: list[workspace.Workspace]
+    workspaces: List[workspace.Workspace]
 
 
 @dataclass(slots=True)
@@ -79,10 +80,14 @@ class UserSuccinct(object):
     is_workflow_bot: bool
 
 
-def create_from_dict(user_dict: dict, workspaces: list, verbose: bool) -> User or UserSuccinct:
+def create_from_dict(user_dict: Dict,
+                     workspaces: List[workspace.Workspace],
+                     verbose: bool) -> User or UserSuccinct:
     """ Create a User object from a dict response from the Slack API
 
     Args:
+        verbose: Whether to output a full User object, or use
+            less verbose succinct class
         user_dict: dict/JSON format data from Slack API
         workspaces: list of Workspace objects
     Returns:

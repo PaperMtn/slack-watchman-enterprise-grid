@@ -22,7 +22,7 @@ class SignatureUpdater(object):
         response = urlopen(SIGNATURE_URL)
 
         try:
-            sig_dir = os.path.join(self.application_path, 'signatures/')
+            sig_dir = os.path.join(self.application_path, 'watchman-signatures/')
             for sub_directory in [
                 '',
                 'config_files',
@@ -76,15 +76,6 @@ class SignatureUpdater(object):
                         shutil.copyfileobj(source, target)
                     target.close()
                     source.close()
-
-                # if datetime(*signatures_zip_file.getinfo(file_path).date_time) > existing_modified_date:
-                #     print('weeee')
-                #     source = signatures_zip_file.open(file_path)
-                #     target = open(target_file, 'wb')
-                #     with source, target:
-                #         shutil.copyfileobj(source, target)
-                #     target.close()
-                #     source.close()
 
         except Exception as e:
             self.logger.log('CRITICAL', f'Error while extracting the signature files from the download package {e}')

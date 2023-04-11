@@ -8,7 +8,7 @@ __all__ = [
     '__license__',
 ]
 
-__title__ = 'GitLab Watchman'
+__title__ = 'Slack Watchman for Enterprise Grid'
 __version__ = '2.0.0'
 __summary__ = 'Monitoring your Slack Enterprise Grid for sensitive information'
 __author__ = 'PaperMtn'

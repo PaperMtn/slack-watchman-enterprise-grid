@@ -4,18 +4,25 @@ import os
 import time
 import calendar
 from pathlib import Path
+from typing import List
 
 from . import __version__
 from . import sw_logger
 from . import slack_wrapper
 from . import signature_updater
-from .models import signature
+from .models import (
+    signature,
+    user,
+    workspace,
+    post,
+    conversation
+)
 
-SIGNATURES_PATH = (Path(__file__).parents[2] / 'signatures').resolve()
+SIGNATURES_PATH = (Path(__file__).parents[2] / 'watchman-signatures').resolve()
 OUTPUT_LOGGER: sw_logger.JSONLogger
 
 
-def load_signatures() -> list:
+def load_signatures() -> List[signature.Signature]:
     """ Load signatures from YAML files
     Returns:
         List containing loaded definitions as Signatures objects
@@ -36,20 +43,20 @@ def load_signatures() -> list:
         raise e
 
 
-def search(sig: signature,
+def search(loaded_signature: signature,
            slack_connection: slack_wrapper.SlackAPI,
-           user_list: list,
-           message_list: list,
-           workspace_list: list,
-           files_list: list,
+           user_list: List[user.User],
+           message_list: List[post.Message],
+           workspace_list: List[workspace.Workspace],
+           files_list: List[post.File],
            scope: str,
            cores: int,
-           verbose: bool):
+           verbose: bool) -> None:
     """ Uses the signature to call the relevant search functions to find data in messages
     files and drafts. Results are output to stdout logging.
     Args:
         slack_connection: Slack API object
-        sig: Signature object
+        loaded_signature: Signature object
         user_list: List of User objects from the Enterprise
         message_list: List of Message objects to search through
         workspace_list: List of Workspace objects from the Enterprise
@@ -60,9 +67,9 @@ def search(sig: signature,
     """
 
     if scope == 'messages':
-        OUTPUT_LOGGER.log('INFO', f'Searching for posts containing {sig.name}')
+        OUTPUT_LOGGER.log('INFO', f'Searching for posts containing {loaded_signature.name}')
         messages = slack_wrapper.search_message_matches(
-            sig,
+            loaded_signature,
             slack_connection,
             user_list,
             message_list,
@@ -77,15 +84,15 @@ def search(sig: signature,
                     'NOTIFY',
                     message,
                     scope=scope,
-                    severity=sig.severity,
-                    detect_type=sig.name,
+                    severity=loaded_signature.severity,
+                    detect_type=loaded_signature.name,
                     notify_type='result'
                 )
 
     if scope == 'files':
-        OUTPUT_LOGGER.log('INFO', f'Searching for {sig.name}')
+        OUTPUT_LOGGER.log('INFO', f'Searching for {loaded_signature.name}')
         files = slack_wrapper.search_file_matches(
-            sig,
+            loaded_signature,
             user_list,
             files_list,
             cores,
@@ -97,8 +104,8 @@ def search(sig: signature,
                     'NOTIFY',
                     file,
                     scope=scope,
-                    severity=sig.severity,
-                    detect_type=sig.name,
+                    severity=loaded_signature.severity,
+                    detect_type=loaded_signature.name,
                     notify_type='result'
                 )
 
@@ -206,7 +213,8 @@ def main():
         OUTPUT_LOGGER.log('SUCCESS', f'{len(signature_list)} signatures loaded')
         OUTPUT_LOGGER.log('INFO', f'Searching previous {hours} hour(s), {minutes} minutes')
         OUTPUT_LOGGER.log('INFO', 'Enumerating Enterprise information')
-        OUTPUT_LOGGER.log('NOTIFY', slack_wrapper.get_enterprise(slack_con), scope='Enterprise', notify_type='enterprise')
+        OUTPUT_LOGGER.log('NOTIFY', slack_wrapper.get_enterprise(slack_con), scope='Enterprise',
+                          notify_type='enterprise')
         OUTPUT_LOGGER.log('INFO', 'Enumerating Enterprise workspaces')
         workspace_list = slack_wrapper.get_workspaces(slack_con, verbose)
         OUTPUT_LOGGER.log('INFO', f'{len(workspace_list)} workspaces discovered')

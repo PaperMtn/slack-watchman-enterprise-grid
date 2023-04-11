@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.10']
 
     steps:
     - uses: actions/checkout@v2
@@ -40,9 +40,6 @@ jobs:
         python3 -m build 
         twine check dist/*.whl
         python3 -m pip install dist/*.whl
-    - name: Test rules
-      run: |
-        python3 -m unittest tests/test_signatures.py
     - name: Test run
       run: |
         slack-watchman-eg --version
@@ -53,7 +50,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.10']
 
     steps:
     - uses: actions/checkout@v2

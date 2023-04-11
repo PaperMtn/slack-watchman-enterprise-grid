@@ -1,9 +1,10 @@
 import time
 from dataclasses import dataclass
+from typing import List, Dict
 
 
 def _convert_timestamp(timestamp: str or int) -> str or None:
-    """ Converts epoch timestamp into human readable time
+    """ Converts epoch timestamp into human-readable time
 
     Args:
         timestamp: epoch timestamp in seconds
@@ -42,10 +43,10 @@ class Retention(object):
 
 @dataclass(slots=True)
 class Shared(object):
-    shared_team_ids: list
-    connected_team_ids: list
-    internal_team_ids: list
-    connected_limited_team_ids: list
+    shared_team_ids: List[str]
+    connected_team_ids: List[str]
+    internal_team_ids: List[str]
+    connected_limited_team_ids: List[str]
 
 
 @dataclass(slots=True)
@@ -75,12 +76,12 @@ class Conversation(object):
     name_normalized: str
     is_org_mandatory: bool
     is_org_default: bool
-    previous_names: list
+    previous_names: List[str]
     has_guests: bool
     purpose: Purpose
     topic: Topic
     retention: Retention
-    shared_workspaces: list
+    shared_workspaces: List[str]
 
 
 @dataclass(slots=True)
@@ -107,7 +108,7 @@ class ConversationSuccinct(object):
     purpose: Purpose
 
 
-def create_from_dict(conv_dict: dict, verbose: bool) -> Conversation or ConversationSuccinct:
+def create_from_dict(conv_dict: Dict, verbose: bool) -> Conversation or ConversationSuccinct:
     """ Create a User object from a dict response from the Slack API
 
     Args:

@@ -5,7 +5,9 @@ __pycache__
 .Python
 env
 venv
-signatures/
+dist
+signatures
+watchman-signatures
 pip-log.txt
 pip-delete-this-directory.txt
 .tox

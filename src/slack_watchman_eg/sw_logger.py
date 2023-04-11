@@ -3,22 +3,23 @@ import dataclasses
 import logging
 import sys
 import logging.handlers
-from logging import Logger
 import re
-from colorama import Fore, Back, Style
-from colorama import init
 import traceback
+from logging import Logger
+from typing import Any, Dict
+from colorama import Fore, Back, Style, init
 
 
 class StdoutLogger:
     def __init__(self, **kwargs):
         self.debug = kwargs.get('debug')
-
+        self.print_header()
         init()
 
-        self.print_header()
-
-    def log(self, mes_type, message, **kwargs):
+    def log(self,
+            mes_type: str,
+            message: Any,
+            **kwargs) -> None:
 
         notify_type = kwargs.get('notify_type')
 
@@ -90,7 +91,9 @@ class StdoutLogger:
             print('Cannot print certain characters to command line - see log file for full unicode encoded log line')
             self.log_to_stdout(message, mes_type)
 
-    def log_to_stdout(self, message, mes_type):
+    def log_to_stdout(self,
+                      message: Any,
+                      mes_type: str) -> None:
 
         try:
 
@@ -159,14 +162,13 @@ class StdoutLogger:
             message = header_words.sub(key_color + Style.BRIGHT + r'\1 ' + Fore.WHITE + Style.NORMAL, str(message))
             sys.stdout.write(
                 f"{reset_all}{style}[{base_color}{mes_type}{Fore.WHITE}]{style} {message}{Fore.WHITE}{Style.NORMAL}\n")
-
-        except Exception as e:
+        except Exception:
             if self.debug:
                 traceback.print_exc()
                 sys.exit(1)
-            print("Cannot print to cmd line - formatting error")
+            print('Formatting error')
 
-    def print_header(self):
+    def print_header(self) -> None:
         print(" ".ljust(79) + Style.BRIGHT)
 
         print(
@@ -187,11 +189,11 @@ class StdoutLogger:
         ⠀ ⠈⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
         """
         )
-        print("   Slack Watchman for Enterprise Grid     ")
-        print(Style.DIM + "   Detect exposed secrets in Slack Enterprise Grid      " + Style.RESET_ALL)
-        print("  ")
-        print(Style.BRIGHT + "   by PaperMtn - GNU General Public License")
-        print(" ".ljust(79) + Fore.GREEN)
+        print('   Slack Watchman for Enterprise Grid     ')
+        print(Style.DIM + '   Detect exposed secrets in Slack Enterprise Grid      ' + Style.RESET_ALL)
+        print('  ')
+        print(Style.BRIGHT + '   by PaperMtn - GNU General Public License')
+        print(' '.ljust(79) + Fore.GREEN)
 
 
 class EnhancedJSONEncoder(json.JSONEncoder):
@@ -202,7 +204,7 @@ class EnhancedJSONEncoder(json.JSONEncoder):
 
 
 class JSONLogger(Logger):
-    def __init__(self, name='Slack Watchman for Enterprise Grid', **kwargs):
+    def __init__(self, name: str = 'Slack Watchman for Enterprise Grid', **kwargs):
         super().__init__(name)
         self.notify_format = logging.Formatter(
             '{"timestamp": "%(asctime)s", "level": "NOTIFY", "scope": "%(scope)s", "severity": '
@@ -224,7 +226,7 @@ class JSONLogger(Logger):
 
     def log(self,
             level: str,
-            log_data: str or dict,
+            log_data: str or Dict,
             **kwargs):
         if level.upper() == 'NOTIFY':
             self.handler.setFormatter(self.notify_format)

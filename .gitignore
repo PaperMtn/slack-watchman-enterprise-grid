@@ -128,3 +128,4 @@ dmypy.json
 *.csv
 logging_test.py
 signatures/
+watchman-signatures
