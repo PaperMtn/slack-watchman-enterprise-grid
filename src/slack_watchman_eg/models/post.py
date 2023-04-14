@@ -1,9 +1,12 @@
 import time
 from dataclasses import dataclass
+from typing import List, Dict
+
+from . import conversation
 
 
 def _convert_timestamp(timestamp: str or int) -> str or None:
-    """ Converts epoch timestamp into human readable time
+    """ Converts epoch timestamp into human-readable time
 
     Args:
         timestamp: epoch timestamp in seconds
@@ -20,7 +23,7 @@ def _convert_timestamp(timestamp: str or int) -> str or None:
         return None
 
 
-@dataclass
+@dataclass(slots=True)
 class Post(object):
     """ Parent that defines Post objects. A Slack
     post can be a:
@@ -36,7 +39,7 @@ class Post(object):
     user: str
 
 
-@dataclass
+@dataclass(slots=True)
 class File(Post):
     name: str
     title: str
@@ -50,62 +53,86 @@ class File(Post):
     public_url_shared: bool
     url_private: str
     url_private_download: str
-    shares: list
+    shares: List
 
 
-@dataclass
+@dataclass(slots=True)
 class Message(Post):
     text: str
     type: str
-    blocks: list
-    timestamp: float
-    conversation: dataclass
+    blocks: List[Dict]
+    timestamp: int or float or str
+    conversation: conversation.Conversation or conversation.ConversationSuccinct
 
 
-@dataclass
+@dataclass(slots=True)
 class Draft(Post):
     last_updated_ts: str
     last_updated_client: str
-    blocks: list
-    file_ids: list
+    blocks: List[Dict]
+    file_ids: List[str]
     is_from_composer: bool
     is_deleted: bool
     is_sent: bool
-    destinations: list
-    attachments: list
+    destinations: List[Dict]
+    attachments: List[Dict]
     date_scheduled: int or float
 
 
-def create_draft_from_dict(draft_dict: dict) -> Draft:
+@dataclass(slots=True)
+class DraftSuccinct(Post):
+    last_updated_ts: str
+    last_updated_client: str
+    blocks: List[Dict]
+    destinations: List[Dict]
+    attachments: List[Dict]
+
+
+def create_draft_from_dict(draft_dict: Dict, verbose: bool) -> Draft or DraftSuccinct:
     """ Create a Draft post object from a dict containing JSON data from
     the Slack API
 
     Args:
         draft_dict: dict containing post information from the Slack API
+        verbose: Whether to use verbose logging or not
     Returns:
         Draft object for the post
     """
 
-    return Draft(
-        id=draft_dict.get('id'),
-        team=draft_dict.get('team_id'),
-        created=draft_dict.get('date_created'),
-        client_msg_id=draft_dict.get('client_msg_id'),
-        user=draft_dict.get('user_id'),
-        last_updated_ts=_convert_timestamp(draft_dict.get('last_updated_ts')),
-        last_updated_client=draft_dict.get('last_updated_client'),
-        blocks=draft_dict.get('blocks'),
-        file_ids=draft_dict.get('file_ids'),
-        is_from_composer=draft_dict.get('is_from_composer'),
-        is_deleted=draft_dict.get('is_deleted'),
-        is_sent=draft_dict.get('is_sent'),
-        destinations=[i.get('channel_id') for i in draft_dict.get('destinations')],
-        attachments=draft_dict.get('attachments'),
-        date_scheduled=_convert_timestamp(draft_dict.get('date_scheduled'))
-    )
+    if verbose:
+        return Draft(
+            id=draft_dict.get('id'),
+            team=draft_dict.get('team_id'),
+            created=draft_dict.get('date_created'),
+            client_msg_id=draft_dict.get('client_msg_id'),
+            user=draft_dict.get('user_id'),
+            last_updated_ts=_convert_timestamp(draft_dict.get('last_updated_ts')),
+            last_updated_client=draft_dict.get('last_updated_client'),
+            blocks=draft_dict.get('blocks'),
+            file_ids=draft_dict.get('file_ids'),
+            is_from_composer=draft_dict.get('is_from_composer'),
+            is_deleted=draft_dict.get('is_deleted'),
+            is_sent=draft_dict.get('is_sent'),
+            destinations=[i.get('channel_id') for i in draft_dict.get('destinations')],
+            attachments=draft_dict.get('attachments'),
+            date_scheduled=_convert_timestamp(draft_dict.get('date_scheduled'))
+        )
+    else:
+        return DraftSuccinct(
+            id=draft_dict.get('id'),
+            team=draft_dict.get('team_id'),
+            created=draft_dict.get('date_created'),
+            client_msg_id=draft_dict.get('client_msg_id'),
+            user=draft_dict.get('user_id'),
+            last_updated_ts=_convert_timestamp(draft_dict.get('last_updated_ts')),
+            last_updated_client=draft_dict.get('last_updated_client'),
+            blocks=draft_dict.get('blocks'),
+            destinations=[i.get('channel_id') for i in draft_dict.get('destinations')],
+            attachments=draft_dict.get('attachments'),
+        )
 
 
-def create_message_from_dict(message_dict: dict) -> Message:
+def create_message_from_dict(message_dict: Dict) -> Message:
     """ Create a Message post object from a dict containing JSON data from
     the Slack API
 
@@ -129,7 +156,7 @@ def create_message_from_dict(message_dict: dict) -> Message:
     )
 
 
-def create_file_from_dict(file_dict: dict) -> File:
+def create_file_from_dict(file_dict: Dict) -> File:
     """ Create a File post object from a dict containing JSON data from
     the Slack API
 

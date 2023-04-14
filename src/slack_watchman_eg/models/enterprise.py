@@ -1,22 +1,11 @@
 from dataclasses import dataclass
+from typing import Dict
 
 
-@dataclass
+@dataclass(slots=True)
 class Enterprise(object):
     """ Class that defines Enterprise objects. A Slack Enterprise
     is the top level organisation that contains workspaces"""
-
-    __slots__ = [
-        'id',
-        'name',
-        'domain',
-        'email_domain',
-        'is_verified',
-        'discoverable',
-        'pay_prod_cur',
-        'locale',
-        'url'
-    ]
 
     id: str
     name: str
@@ -29,7 +18,7 @@ class Enterprise(object):
     url: str
 
 
-def create_from_dict(enterprise_dict: dict) -> Enterprise:
+def create_from_dict(enterprise_dict: Dict) -> Enterprise:
     """ Create an Enterprise object from a dict response from the Slack API
 
     Args:
