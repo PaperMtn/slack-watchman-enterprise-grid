@@ -160,8 +160,9 @@ def main():
         parser.add_argument('--users', '-u', dest='users', action='store_true', help='Return all users')
         parser.add_argument('--workspaces', '-w', dest='workspaces', action='store_true', help='Return all workspaces')
         parser.add_argument('--debug', '-d', dest='debug', action='store_true', help='Turn on debug level logging')
-        parser.add_argument('--verbose', '-V', dest='verbose', action='store_true', help='Turn on more verbose'
-                                                                                         'output for JSON logging')
+        parser.add_argument('--verbose', '-V', dest='verbose', action='store_true',
+                            help='Turn on more verbose output for JSON logging. '
+                                 'This includes more fields, but is larger')
 
         args = parser.parse_args()
         hours = args.hours
