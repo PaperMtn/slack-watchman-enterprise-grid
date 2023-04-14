@@ -8,7 +8,7 @@
 
 ## About Slack Watchman for Enterprise Grid
 
-Slack Watchman for Enterprise Grid uses the Slack Enterprise Grid DLP API to look for potentially sensitive data exposed in your Slack Enterprise.
+Slack Watchman for Enterprise Grid uses the Slack Enterprise Grid DLP API to look for potentially exposed secrets and sensitive data in Slack Enterprise Grid.
 
 **Note**: Slack Watchman for Enterprise Grid is designed for Enterprise Grid subscribers of Slack only. If you use Slack without an Enterprise subscription, you can use the standard version of [Slack Watchman](https://github.com/PaperMtn/slack-watchman)
 
@@ -53,42 +53,7 @@ I have found the most efficient approach is to use between 8-12 cores.
 
 You can specify cores using the optional flag `--cores` at runtime. If this flag is not set, Slack Watchman will automatically use all available cores up to a maximum of 8.
 ### Signatures
-Slack Watchman uses custom YAML signatures to detect matches in Slack.
-
-They follow this format:
-
-```yaml
----
-filename:
-enabled: [true|false]
-meta:
-  name:
-  author:
-  date:
-  description: # what the search should find
-  severity: # rating out of 100
-tombstone: [true|false]
-scope:
-  - [files|messages]
-file_types: # optional list for use with file searching*
-locations: # what conversations to search in. Any combination of:
-  - public
-  - private
-  - connect
-  - im
-  - mpim
-test_cases:
-  match_cases:
-  - # test case that should match the regex*
-  fail_cases:
-  - # test case that should not match the regex*
-search_strings:
-- # search query(s) to use in Slack
-pattern: # Regex pattern to filter out false positives
-```
-There are Python tests to ensure signatures are formatted properly and that the Regex patterns work in the `tests` dir
-
-More information about signatures, and how you can add your own, is in the file `docs/signatures.md`.
+Slack Watchman uses custom YAML signatures to detect matches in Slack. These signatures are pulled from the central [Watchman Signatures repository](https://github.com/PaperMtn/watchman-signatures). Slack Watchman for Enterprise Grid automatically updates its signature base at runtime to ensure its using the latest signatures to detect secrets. 
 
 ## Requirements
 ### Slack API token
@@ -113,7 +78,7 @@ You can install the latest stable version via pip:
 
 `python3 -m pip install slack-watchman-eg`
 
-Or build from source yourself, which is useful for if you intend to add your own signatures:
+Or build from source yourself:
 
 Download the release source files, then from the top level repository run:
 ```shell
@@ -140,30 +105,32 @@ docker run --rm --env-file .env papermountain/slack-watchman-eg --hours 1 --core
 
 ## Usage
 ```
-usage: slack-watchman-eg [-h] [--hours HOURS] [--minutes MINUTES] [--cores CORES] [--version] [--users] [--workspaces] [--sandbox] [--tombstone] [--tombstone-text-file TOMBSTONE_FILEPATH]
+usage: slack-watchman-eg [-h] [--hours HOURS] [--minutes MINUTES] [--output {json,terminal}] [--cores CORES] [--version] [--users] [--workspaces] [--debug] [--verbose]
 
 Monitoring your Slack Enterprise Grid for sensitive information
 
 options:
   -h, --help            show this help message and exit
-  --hours HOURS         How far back to search in whole hours between 1-24. Defaults to 1 if no acceptable value given
-  --minutes MINUTES     How far back to search in whole minutes between 1-60
-  --cores CORES         Number of cores to use between 1-12
-  --version             show program's version number and exit
-  --users               Find all users
-  --workspaces          Find all workspaces
-  --sandbox             Search using only sandbox signatures
-  --tombstone           Tombstone (REMOVE) all matching messages
-  --tombstone-text-file TOMBSTONE_FILEPATH
-                        Path to file containing custom tombstone notification text (Optional)
+  --hours HOURS, -hr HOURS
+                        How far back to search in whole hours between 1-24. Defaults to 1 if no acceptable value given
+  --minutes MINUTES, -m MINUTES
+                        How far back to search in whole minutes between 1-60
+  --output {json,terminal}, -o {json,terminal}
+                        What logging output to use - JSON formatted output, or textual outputfor reading via terminal. Default is terminal
+  --cores CORES, -c CORES
+                        Number of cores to use between 1-12
+  --version, -v         show program's version number and exit
+  --users, -u           Return all users
+  --workspaces, -w      Return all workspaces
+  --debug, -d           Turn on debug level logging
+  --verbose, -V         Turn on more verbose output for JSON logging. This includes more fields, but is larger
 ```
 
 ## Other Watchman apps
 You may be interested in the other apps in the Watchman family:
+- [Slack Watchman](https://github.com/PaperMtn/slack-watchman)
 - [GitLab Watchman](https://github.com/PaperMtn/gitlab-watchman)
 - [GitHub Watchman](https://github.com/PaperMtn/github-watchman)
-- [Slack Watchman](https://github.com/PaperMtn/slack-watchman)
-- [Trello Watchman](https://github.com/PaperMtn/trello-watchman)
 
 ## License
-The source code for this project is released under the [GNU General Public Licence](https://www.gnu.org/licenses/licenses.html#GPL). This project is not associated with Slack.
+The source code for this project is released under the [GNU General Public Licence](https://www.gnu.org/licenses/licenses.html#GPL). This project is not associated with Slack Technologies or Salesforce.
