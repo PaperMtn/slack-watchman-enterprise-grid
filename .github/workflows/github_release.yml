@@ -41,9 +41,13 @@ jobs:
         uses: ffurrer2/extract-release-notes@v1
         with:
           changelog_file: CHANGELOG.md
+      - name: Retrieve version
+        run: |
+          echo "TAG_NAME=$(slack-watchman-eg -v | awk '{match($0, /[0-9]+\.[0-9]+\.[0-9]+/); print substr($0, RSTART, RLENGTH)}')" >> $GITHUB_OUTPUT
+        id: version
       - name: Release
         uses: ncipollo/release-action@v1
         with:
           artifacts: "dist/*.tar.gz"
           body: ${{ steps.extract-release-notes.outputs.release_notes }}
-          tag: slack-watchman-eg -v | awk '{match($0, /[0-9]+\.[0-9]+\.[0-9]+/); print substr($0, RSTART, RLENGTH)}'
+          tag: ${{ steps.version.outputs.TAG_NAME }}
