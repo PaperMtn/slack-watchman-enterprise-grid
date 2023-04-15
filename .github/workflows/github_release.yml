@@ -3,8 +3,6 @@ name: Create Release
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   build:
@@ -51,3 +49,4 @@ jobs:
           artifacts: "dist/*.tar.gz"
           body: ${{ steps.extract-release-notes.outputs.release_notes }}
           tag: ${{ steps.version.outputs.TAG_NAME }}
+          name: Slack Watchman for Enterprise Grid - ${{ steps.version.outputs.TAG_NAME }}
